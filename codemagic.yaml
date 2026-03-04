@@ -8,36 +8,32 @@ workflows:
       vars:
         BUNDLE_ID: "com.abel.googleshortcuts"
         APP_NAME: "GoogleShortcuts"
-        # Estas se configuran en Codemagic UI > Environment variables
-        # GOOGLE_CLIENT_ID: (configurar en UI como "Secure")
-      ios_signing:
-        distribution_type: development
-        bundle_identifier: com.abel.googleshortcuts
+      groups:
+        - google_secrets
     scripts:
-      # 1. Instalar XcodeGen
       - name: Install XcodeGen
         script: |
-          brew install xcodegen
+          HOMEBREW_NO_AUTO_UPDATE=1 brew install xcodegen
 
-      # 2. Inyectar secretos en Info.plist antes de compilar
       - name: Inject secrets
         script: |
           cd $CM_BUILD_DIR
-          # Inyectar GOOGLE_CLIENT_ID en Info.plist
-          /usr/libexec/PlistBuddy -c "Add :GOOGLE_CLIENT_ID string ${GOOGLE_CLIENT_ID}" \
-            GoogleShortcuts/App/Info.plist 2>/dev/null || \
-          /usr/libexec/PlistBuddy -c "Set :GOOGLE_CLIENT_ID ${GOOGLE_CLIENT_ID}" \
-            GoogleShortcuts/App/Info.plist
-          
-          echo "Client ID injected successfully"
+          if [ -n "$GOOGLE_CLIENT_ID" ]; then
+            /usr/libexec/PlistBuddy -c "Add :GOOGLE_CLIENT_ID string ${GOOGLE_CLIENT_ID}" \
+              GoogleShortcuts/App/Info.plist 2>/dev/null || \
+            /usr/libexec/PlistBuddy -c "Set :GOOGLE_CLIENT_ID ${GOOGLE_CLIENT_ID}" \
+              GoogleShortcuts/App/Info.plist
+            echo "✅ Client ID injected"
+          else
+            echo "⚠️ GOOGLE_CLIENT_ID not set, skipping injection"
+          fi
 
-      # 3. Generar proyecto Xcode desde project.yml
       - name: Generate Xcode Project
         script: |
           cd $CM_BUILD_DIR
           xcodegen generate
+          echo "✅ Xcode project generated"
 
-      # 4. Compilar
       - name: Build archive
         script: |
           cd $CM_BUILD_DIR
@@ -49,17 +45,32 @@ workflows:
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
+            DEVELOPMENT_TEAM="" \
+            PROVISIONING_PROFILE_SPECIFIER="" \
+            -skipPackagePluginValidation \
+            -skipMacroValidation \
             | xcpretty || true
+          
+          # Verificar que el archive se creó
+          if [ -d "$CM_BUILD_DIR/build/GoogleShortcuts.xcarchive" ]; then
+            echo "✅ Archive created successfully"
+          else
+            echo "❌ Archive FAILED"
+            exit 1
+          fi
 
-      # 5. Crear .ipa sin firmar
       - name: Create unsigned IPA
         script: |
           APP_PATH=$(find $CM_BUILD_DIR/build/GoogleShortcuts.xcarchive -name "*.app" -type d | head -1)
           
           if [ -z "$APP_PATH" ]; then
-            echo "ERROR: No se encontró el .app"
+            echo "❌ No .app found in archive"
+            echo "Archive contents:"
+            find $CM_BUILD_DIR/build/GoogleShortcuts.xcarchive -type d
             exit 1
           fi
+          
+          echo "Found app at: $APP_PATH"
           
           mkdir -p $CM_BUILD_DIR/build/Payload
           cp -r "$APP_PATH" $CM_BUILD_DIR/build/Payload/
@@ -67,7 +78,7 @@ workflows:
           cd $CM_BUILD_DIR/build
           zip -r GoogleShortcuts-unsigned.ipa Payload/
           
-          echo "✅ IPA creada: $(du -h GoogleShortcuts-unsigned.ipa | cut -f1)"
+          echo "✅ IPA created: $(du -h GoogleShortcuts-unsigned.ipa | cut -f1)"
 
     artifacts:
       - build/*.ipa
