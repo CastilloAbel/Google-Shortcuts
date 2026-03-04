@@ -184,7 +184,7 @@ struct CheckEmailIntent: AppIntent {
             if unreadOnly {
                 emails = try await EmailService.shared.searchEmails(query: "is:unread", maxResults: count)
             } else {
-                emails = try await EmailService.shared.getRecentEmails(maxResults: count)
+                emails = try await EmailService.shared.getRecentEmails(count: count)
             }
             
             if emails.isEmpty {

@@ -85,7 +85,15 @@ struct EmailListView: View {
         .listStyle(.plain)
         .overlay {
             if filteredEmails.isEmpty && !searchText.isEmpty {
-                ContentUnavailableView.search(text: searchText)
+                VStack(spacing: 12) {
+                    Image(systemName: "magnifyingglass")
+                        .font(.system(size: 40))
+                        .foregroundColor(.gray)
+                    Text("No se encontraron resultados para \"\(searchText)\"")
+                        .font(.headline)
+                        .foregroundColor(.gray)
+                }
+                .padding()
             }
         }
     }

@@ -51,13 +51,6 @@ actor EmailService {
         return messageId
     }
     
-    // Asegurar que sendEmail retorna algo (String o Bool)
-    @discardableResult
-    func sendEmail(to recipient: String, subject: String, body: String) async throws -> Bool {
-        try await gmailClient.sendEmail(to: recipient, subject: subject, body: body)
-        return true
-    }
-    
     // MARK: - Fetch Emails
     
     /// Obtiene los últimos correos del inbox.
@@ -83,6 +76,21 @@ actor EmailService {
     }
     
     // MARK: - Search
+    
+    /// Busca correos por consulta.
+    ///
+    /// - Parameters:
+    ///   - query: Consulta de búsqueda (ej. "is:unread")
+    ///   - maxResults: Máximo de resultados
+    /// - Returns: Correos que coinciden
+    func searchEmails(query: String, maxResults: Int = 20) async throws -> [Email] {
+        guard !query.isEmpty else {
+            throw EmailServiceError.emptySearchQuery
+        }
+        
+        let result = try await gmail.listMessages(maxResults: maxResults, query: query)
+        return result.emails
+    }
     
     /// Busca correos por asunto.
     ///

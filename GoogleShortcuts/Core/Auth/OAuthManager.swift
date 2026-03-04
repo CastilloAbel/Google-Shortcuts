@@ -171,7 +171,7 @@ class OAuthManager: ObservableObject {
         let tokenResponse = try JSONDecoder().decode(TokenResponse.self, from: data)
         
         // Guardar tokens
-        try await TokenStorage.shared.saveTokens(from: tokenResponse)
+        TokenStorage.shared.saveTokens(from: tokenResponse)
     }
     
     // MARK: - User Info

@@ -51,6 +51,31 @@ actor HTTPClient {
         return request
     }
     
+    func authenticatedRequest<T: Decodable>(
+        url: String,
+        method: String = "GET",
+        headers: [String: String] = [:],
+        queryItems: [URLQueryItem]? = nil,
+        body: Data? = nil,
+        responseType: T.Type
+    ) async throws -> T {
+        var finalURL = url
+        if let queryItems = queryItems, var components = URLComponents(string: url) {
+            components.queryItems = queryItems
+            if let newURL = components.url?.absoluteString {
+                finalURL = newURL
+            }
+        }
+        
+        let data = try await authenticatedRequest(url: finalURL, method: method, headers: headers, body: body)
+        do {
+            return try JSONDecoder().decode(T.self, from: data)
+        } catch {
+            print("Decoding error: \(error)")
+            throw HTTPError.invalidResponse
+        }
+    }
+    
     func authenticatedRequest(
         url: String,
         method: String = "GET",

@@ -49,8 +49,8 @@ struct MainTabView: View {
 struct SendEmailView: View {
     
     @State private var to = ""
-    @State private var subject = ""
-    @State private var body = ""
+    @State private var subjectText = ""
+    @State private var bodyText = ""
     @State private var isSending = false
     @State private var showResult = false
     @State private var resultMessage = ""
@@ -67,14 +67,16 @@ struct SendEmailView: View {
                 }
                 
                 Section("Mensaje") {
-                    TextField("Asunto", text: $subject)
+                    TextField("Asunto", text: $subjectText)
                     
-                    TextEditor(text: $body)
+                    TextEditor(text: $bodyText)
                         .frame(minHeight: 150)
                 }
                 
                 Section {
-                    Button(action: sendEmail) {
+                    Button(action: {
+                        Task { await sendEmail() }
+                    }) {
                         HStack {
                             if isSending {
                                 ProgressView()
@@ -84,7 +86,7 @@ struct SendEmailView: View {
                         }
                         .frame(maxWidth: .infinity)
                     }
-                    .disabled(to.isEmpty || subject.isEmpty || isSending)
+                    .disabled(to.isEmpty || subjectText.isEmpty || isSending)
                 }
             }
             .navigationTitle("Enviar correo")
@@ -105,8 +107,8 @@ struct SendEmailView: View {
             do {
                 let messageId = try await EmailService.shared.sendEmail(
                     to: to,
-                    subject: subject,
-                    body: body
+                    subject: subjectText,
+                    body: bodyText
                 )
                 resultMessage = "✅ Correo enviado correctamente\nID: \(messageId)"
                 isError = false
@@ -122,7 +124,7 @@ struct SendEmailView: View {
     
     private func clearForm() {
         to = ""
-        subject = ""
-        body = ""
+        subjectText = ""
+        bodyText = ""
     }
 }

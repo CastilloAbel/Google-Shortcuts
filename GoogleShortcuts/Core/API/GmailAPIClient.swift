@@ -107,7 +107,12 @@ actor GmailAPIClient {
         body: String,
         from: String? = nil
     ) async throws -> String {
-        let senderEmail = from ?? (try await getSenderEmail())
+        let senderEmail: String
+        if let fromEmail = from {
+            senderEmail = fromEmail
+        } else {
+            senderEmail = try await getSenderEmail()
+        }
         
         let composition = EmailComposition(
             to: to,
@@ -121,11 +126,13 @@ actor GmailAPIClient {
         
         // Gmail API espera: { "raw": "base64url_encoded_message" }
         let sendBody = ["raw": rawMessage]
+        let sendBodyData = try JSONEncoder().encode(sendBody)
         
         let response: GmailSendResponse = try await http.authenticatedRequest(
             url: "\(baseURL)/messages/send",
-            method: .post,
-            body: sendBody,
+            method: "POST",
+            headers: ["Content-Type": "application/json"],
+            body: sendBodyData,
             responseType: GmailSendResponse.self
         )
         

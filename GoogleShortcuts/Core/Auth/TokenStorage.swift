@@ -1,6 +1,22 @@
 import Foundation
 import Security
 
+struct TokenResponse: Codable {
+    let accessToken: String
+    let expiresIn: Int
+    let refreshToken: String?
+    let scope: String?
+    let tokenType: String?
+    
+    enum CodingKeys: String, CodingKey {
+        case accessToken = "access_token"
+        case expiresIn = "expires_in"
+        case refreshToken = "refresh_token"
+        case scope
+        case tokenType = "token_type"
+    }
+}
+
 class TokenStorage {
     static let shared = TokenStorage()
     
@@ -19,7 +35,26 @@ class TokenStorage {
         }
     }
     
+    func getValidAccessToken() async throws -> String {
+        guard let tokens = try loadTokens() else {
+            throw TokenError.noRefreshToken
+        }
+        if tokens.isExpired {
+            let refreshed = try await refreshAccessToken()
+            return refreshed.accessToken
+        }
+        return tokens.accessToken
+    }
+    
     // MARK: - Save Tokens
+    
+    func saveTokens(from response: TokenResponse) {
+        saveTokens(
+            accessToken: response.accessToken,
+            refreshToken: response.refreshToken ?? "",
+            expiresIn: response.expiresIn
+        )
+    }
     
     func saveTokens(accessToken: String, refreshToken: String, expiresIn: Int) {
         let expiration = Date().addingTimeInterval(TimeInterval(expiresIn))
@@ -155,20 +190,6 @@ class TokenStorage {
             case .noRefreshToken: return "No hay refresh token disponible"
             case .refreshFailed: return "Error al renovar el token"
             }
-        }
-    }
-    
-    // MARK: - Token Response
-    
-    private struct TokenResponse: Codable {
-        let accessToken: String
-        let expiresIn: Int
-        let tokenType: String
-        
-        enum CodingKeys: String, CodingKey {
-            case accessToken = "access_token"
-            case expiresIn = "expires_in"
-            case tokenType = "token_type"
         }
     }
 }
