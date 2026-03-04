@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!--
+    Entitlements mínimos para cuenta Apple gratuita.
+    
+    ✅ Disponible con cuenta gratuita:
+    - app-groups (para compartir datos entre app e intents)
+    - keychain-access-groups (implícito)
+    
+    ❌ NO disponible sin cuenta paga:
+    - com.apple.developer.associated-domains (Universal Links)
+    - aps-environment (Push Notifications)
+    - com.apple.developer.usernotifications.communication
+    -->
+    <key>com.apple.security.application-groups</key>
+    <array>
+        <string>group.com.personal.googleshortcuts</string>
+    </array>
+</dict>
+</plist>

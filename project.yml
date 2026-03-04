@@ -1,0 +1,71 @@
+# XcodeGen Project Specification
+# Genera .xcodeproj sin necesidad de Xcode para diseñar
+# Uso: xcodegen generate (en macOS)
+
+name: GoogleShortcuts
+options:
+  bundleIdPrefix: com.personal
+  deploymentTarget:
+    iOS: "16.0"
+  xcodeVersion: "15.0"
+  generateEmptyDirectories: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    TARGETED_DEVICE_FAMILY: "1" # solo iPhone
+    INFOPLIST_FILE: GoogleShortcuts/App/Info.plist
+    PRODUCT_BUNDLE_IDENTIFIER: com.personal.googleshortcuts
+    CODE_SIGN_IDENTITY: "Apple Development"
+    CODE_SIGN_STYLE: Automatic
+    DEVELOPMENT_TEAM: "" # Se llena automáticamente con Apple ID gratuito
+
+targets:
+  GoogleShortcuts:
+    type: application
+    platform: iOS
+    sources:
+      - path: GoogleShortcuts
+        excludes:
+          - "**/.DS_Store"
+    settings:
+      base:
+        INFOPLIST_FILE: GoogleShortcuts/App/Info.plist
+        PRODUCT_BUNDLE_IDENTIFIER: com.personal.googleshortcuts
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+    entitlements:
+      path: GoogleShortcuts/App/GoogleShortcuts.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.personal.googleshortcuts
+    info:
+      path: GoogleShortcuts/App/Info.plist
+      properties:
+        CFBundleDisplayName: GmailShortcuts
+        CFBundleShortVersionString: "1.0.0"
+        CFBundleVersion: "1"
+        UILaunchScreen: {}
+        CFBundleURLTypes:
+          - CFBundleURLSchemes:
+              - googleshortcuts
+              - com.googleusercontent.apps.YOUR_CLIENT_ID
+            CFBundleURLName: com.personal.googleshortcuts
+        LSApplicationQueriesSchemes:
+          - googlegmail
+        UIBackgroundModes:
+          - fetch # Background fetch para polling (no requiere cuenta paga)
+        NSAppTransportSecurity:
+          NSAllowsArbitraryLoads: false
+    dependencies: []
+    preBuildScripts: []
+    postBuildScripts: []
+
+schemes:
+  GoogleShortcuts:
+    build:
+      targets:
+        GoogleShortcuts: all
+    run:
+      config: Debug
+    archive:
+      config: Release
