@@ -4,7 +4,7 @@ workflows:
     max_build_duration: 30
     instance_type: mac_mini_m2
     environment:
-      xcode: 15.4
+      xcode: 16.2
       vars:
         BUNDLE_ID: "com.abel.googleshortcuts"
         APP_NAME: "GoogleShortcuts"
@@ -51,7 +51,6 @@ workflows:
             -skipMacroValidation \
             | xcpretty || true
           
-          # Verificar que el archive se creó
           if [ -d "$CM_BUILD_DIR/build/GoogleShortcuts.xcarchive" ]; then
             echo "✅ Archive created successfully"
           else
@@ -65,7 +64,6 @@ workflows:
           
           if [ -z "$APP_PATH" ]; then
             echo "❌ No .app found in archive"
-            echo "Archive contents:"
             find $CM_BUILD_DIR/build/GoogleShortcuts.xcarchive -type d
             exit 1
           fi
