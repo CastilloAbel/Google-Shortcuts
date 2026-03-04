@@ -12,150 +12,117 @@ actor HTTPClient {
     
     static let shared = HTTPClient()
     
-    private let session: URLSession
-    private let decoder: JSONDecoder
-    private let encoder: JSONEncoder
-    
-    private init() {
-        let config = URLSessionConfiguration.default
-        config.timeoutIntervalForRequest = 30
-        config.timeoutIntervalForResource = 60
-        config.waitsForConnectivity = true
+    enum HTTPError: Error, LocalizedError {
+        case invalidURL
+        case invalidResponse
+        case httpError(statusCode: Int, data: Data)
+        case unauthorized
+        case noToken
         
-        self.session = URLSession(configuration: config)
-        self.decoder = JSONDecoder()
-        self.encoder = JSONEncoder()
-    }
-    
-    // MARK: - Authenticated Requests
-    
-    /// Ejecuta una request autenticada con Bearer token.
-    /// Si el token ha expirado, lo refresca automáticamente y reintenta.
-    func authenticatedRequest<T: Decodable>(
-        url: String,
-        method: HTTPMethod = .get,
-        body: (any Encodable)? = nil,
-        queryItems: [URLQueryItem]? = nil,
-        responseType: T.Type
-    ) async throws -> T {
-        let token = try await TokenStorage.shared.getValidAccessToken()
-        
-        do {
-            return try await executeRequest(
-                url: url,
-                method: method,
-                body: body,
-                queryItems: queryItems,
-                token: token,
-                responseType: responseType
-            )
-        } catch let error as HTTPError where error.statusCode == 401 {
-            // Token inválido → intentar refresh y reintentar una vez
-            let newToken = try await TokenStorage.shared.getValidAccessToken()
-            return try await executeRequest(
-                url: url,
-                method: method,
-                body: body,
-                queryItems: queryItems,
-                token: newToken,
-                responseType: responseType
-            )
-        }
-    }
-    
-    /// Ejecuta una request autenticada sin esperar body de respuesta.
-    func authenticatedRequestNoResponse(
-        url: String,
-        method: HTTPMethod = .post,
-        body: (any Encodable)? = nil,
-        queryItems: [URLQueryItem]? = nil
-    ) async throws {
-        let token = try await TokenStorage.shared.getValidAccessToken()
-        
-        var request = try buildRequest(
-            url: url,
-            method: method,
-            body: body,
-            queryItems: queryItems,
-            token: token
-        )
-        
-        let (_, response) = try await session.data(for: request)
-        
-        guard let httpResponse = response as? HTTPURLResponse,
-              (200...299).contains(httpResponse.statusCode) else {
-            let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
-            throw HTTPError(statusCode: statusCode, message: "Request failed")
-        }
-    }
-    
-    // MARK: - Private
-    
-    private func executeRequest<T: Decodable>(
-        url: String,
-        method: HTTPMethod,
-        body: (any Encodable)?,
-        queryItems: [URLQueryItem]?,
-        token: String,
-        responseType: T.Type
-    ) async throws -> T {
-        let request = try buildRequest(
-            url: url,
-            method: method,
-            body: body,
-            queryItems: queryItems,
-            token: token
-        )
-        
-        let (data, response) = try await session.data(for: request)
-        
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw HTTPError(statusCode: 0, message: "Invalid response")
-        }
-        
-        guard (200...299).contains(httpResponse.statusCode) else {
-            // Intentar parsear error de Gmail API
-            if let apiError = try? decoder.decode(GmailAPIError.self, from: data) {
-                throw HTTPError(
-                    statusCode: httpResponse.statusCode,
-                    message: apiError.error.message
-                )
+        var errorDescription: String? {
+            switch self {
+            case .invalidURL: return "URL inválida"
+            case .invalidResponse: return "Respuesta inválida"
+            case .httpError(let code, _): return "Error HTTP: \(code)"
+            case .unauthorized: return "No autorizado. Inicia sesión de nuevo."
+            case .noToken: return "No hay token de acceso"
             }
-            let body = String(data: data, encoding: .utf8) ?? "Unknown error"
-            throw HTTPError(statusCode: httpResponse.statusCode, message: body)
         }
-        
-        return try decoder.decode(T.self, from: data)
     }
     
     private func buildRequest(
         url: String,
-        method: HTTPMethod,
-        body: (any Encodable)?,
-        queryItems: [URLQueryItem]?,
-        token: String
+        method: String = "GET",
+        headers: [String: String] = [:],
+        body: Data? = nil
     ) throws -> URLRequest {
-        var components = URLComponents(string: url)!
-        
-        if let queryItems = queryItems {
-            components.queryItems = (components.queryItems ?? []) + queryItems
+        guard let url = URL(string: url) else {
+            throw HTTPError.invalidURL
         }
         
-        guard let finalURL = components.url else {
-            throw HTTPError(statusCode: 0, message: "Invalid URL: \(url)")
-        }
+        var request = URLRequest(url: url)
+        request.httpMethod = method
+        request.httpBody = body
         
-        var request = URLRequest(url: finalURL)
-        request.httpMethod = method.rawValue
-        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        request.setValue("application/json", forHTTPHeaderField: "Accept")
-        
-        if let body = body {
-            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            request.httpBody = try encoder.encode(body)
+        for (key, value) in headers {
+            request.setValue(value, forHTTPHeaderField: key)
         }
         
         return request
+    }
+    
+    func authenticatedRequest(
+        url: String,
+        method: String = "GET",
+        headers: [String: String] = [:],
+        body: Data? = nil
+    ) async throws -> Data {
+        // Obtener token válido
+        guard let tokens = try? TokenStorage.shared.loadTokens() else {
+            throw HTTPError.noToken
+        }
+        
+        var accessToken = tokens.accessToken
+        
+        // Verificar si el token expiró
+        if tokens.isExpired {
+            let newTokens = try await TokenStorage.shared.refreshAccessToken()
+            accessToken = newTokens.accessToken
+        }
+        
+        // Construir request con token
+        let request = try buildRequest(
+            url: url,
+            method: method,
+            headers: headers.merging(
+                ["Authorization": "Bearer \(accessToken)"],
+                uniquingKeysWith: { _, new in new }
+            ),
+            body: body
+        )
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw HTTPError.invalidResponse
+        }
+        
+        // Si 401, intentar refresh una vez
+        if httpResponse.statusCode == 401 {
+            let newTokens = try await TokenStorage.shared.refreshAccessToken()
+            
+            let retryRequest = try buildRequest(
+                url: url,
+                method: method,
+                headers: headers.merging(
+                    ["Authorization": "Bearer \(newTokens.accessToken)"],
+                    uniquingKeysWith: { _, new in new }
+                ),
+                body: body
+            )
+            
+            let (retryData, retryResponse) = try await URLSession.shared.data(for: retryRequest)
+            
+            guard let retryHTTP = retryResponse as? HTTPURLResponse else {
+                throw HTTPError.invalidResponse
+            }
+            
+            if retryHTTP.statusCode == 401 {
+                throw HTTPError.unauthorized
+            }
+            
+            guard (200...299).contains(retryHTTP.statusCode) else {
+                throw HTTPError.httpError(statusCode: retryHTTP.statusCode, data: retryData)
+            }
+            
+            return retryData
+        }
+        
+        guard (200...299).contains(httpResponse.statusCode) else {
+            throw HTTPError.httpError(statusCode: httpResponse.statusCode, data: data)
+        }
+        
+        return data
     }
 }
 

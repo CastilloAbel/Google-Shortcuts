@@ -1,108 +1,44 @@
 import AppIntents
+import Foundation
 
-/// App Intent: Enviar correo electrónico via Gmail.
-///
-/// ## Uso en Shortcuts:
-/// 1. Abrir app Shortcuts
-/// 2. Crear nuevo shortcut
-/// 3. Buscar "Enviar correo con GmailShortcuts"
-/// 4. Configurar destinatario, asunto y cuerpo
-/// 5. Ejecutar
-///
-/// ## Parámetros dinámicos:
-/// Todos los parámetros son configurables desde Shortcuts.
-/// Se pueden usar variables de Shortcuts (ej: texto del portapapeles,
-/// resultado de otra acción, etc.)
-///
-/// ## Ejemplo de automatización:
-/// Trigger: "Cuando abro la app Notas"
-/// Action: "Enviar correo con GmailShortcuts"
-///   - To: "mi-jefe@empresa.com"
-///   - Subject: "Nota rápida"
-///   - Body: [Contenido del portapapeles]
 struct SendEmailIntent: AppIntent {
+    static var title: LocalizedStringResource = "Enviar correo Gmail"
+    static var description: IntentDescription = "Envía un correo electrónico usando tu cuenta de Gmail"
     
-    static var title: LocalizedStringResource = "Enviar correo con Gmail"
-    static var description = IntentDescription(
-        "Envía un correo electrónico usando tu cuenta de Gmail.",
-        categoryName: "Email"
-    )
+    @Parameter(title: "Destinatario", description: "Dirección de correo del destinatario")
+    var recipient: String
     
-    // MARK: - Parameters
-    
-    @Parameter(
-        title: "Destinatario",
-        description: "Dirección de correo del destinatario",
-        requestValueDialog: "¿A quién quieres enviar el correo?"
-    )
-    var to: String
-    
-    @Parameter(
-        title: "Asunto",
-        description: "Asunto del correo",
-        requestValueDialog: "¿Cuál es el asunto del correo?"
-    )
+    @Parameter(title: "Asunto", description: "Asunto del correo")
     var subject: String
     
-    @Parameter(
-        title: "Cuerpo",
-        description: "Contenido del correo (texto plano)",
-        requestValueDialog: "¿Qué quieres escribir en el correo?",
-        inputConnectionBehavior: .connectToPreviousIntentResult
-    )
+    @Parameter(title: "Cuerpo", description: "Contenido del correo")
     var body: String
     
-    // MARK: - Execution
-    
-    /// Ejecuta el intent: envía el correo via Gmail API.
-    ///
-    /// - Returns: Resultado con confirmación y ID del mensaje
-    /// - Throws: Error si no hay autenticación o falla el envío
-    func perform() async throws -> some IntentResult & ReturnsValue<String> & ProvidesDialog {
-        // Verificar autenticación
-        guard let tokens = try? await TokenStorage.shared.loadTokens(), tokens != nil else {
-            throw IntentError.notAuthenticated
-        }
-        
-        let messageId = try await EmailService.shared.sendEmail(
-            to: to,
-            subject: subject,
-            body: body
-        )
-        
-        let confirmationMessage = "✅ Correo enviado a \(to) con asunto \"\(subject)\""
-        
-        return .result(
-            value: messageId,
-            dialog: IntentDialog(stringLiteral: confirmationMessage)
-        )
-    }
-    
-    // MARK: - Opening App
-    
-    /// Si no hay autenticación, abre la app para que el usuario inicie sesión.
-    static var openAppWhenRun: Bool = false
-    
-    /// Parametrización con resumen visual en Shortcuts.
     static var parameterSummary: some ParameterSummary {
-        Summary("Enviar correo a \(\.$to) con asunto \(\.$subject)") {
-            \.$body
-        }
+        Summary("Enviar correo a \(\.$recipient) con asunto \(\.$subject)")
     }
-}
-
-// MARK: - Intent Errors
-
-enum IntentError: LocalizedError {
-    case notAuthenticated
-    case invalidParameter(String)
     
-    var errorDescription: String? {
-        switch self {
-        case .notAuthenticated:
-            return "No has iniciado sesión. Abre GmailShortcuts e inicia sesión con Google."
-        case .invalidParameter(let param):
-            return "Parámetro inválido: \(param)"
+    func perform() async throws -> some IntentResult & ReturnsValue<String> {
+        // Verificar autenticación
+        guard let tokens = try? TokenStorage.shared.loadTokens() else {
+            return .result(value: "❌ Error: No estás autenticado. Abre GoogleShortcuts e inicia sesión.")
+        }
+        
+        // Verificar que el token no esté expirado sin posibilidad de refresh
+        if tokens.isExpired {
+            do {
+                _ = try await TokenStorage.shared.refreshAccessToken()
+            } catch {
+                return .result(value: "❌ Error: Token expirado. Abre GoogleShortcuts para renovar la sesión.")
+            }
+        }
+        
+        do {
+            let emailService = EmailService.shared
+            try await emailService.sendEmail(to: recipient, subject: subject, body: body)
+            return .result(value: "✅ Correo enviado a \(recipient)")
+        } catch {
+            return .result(value: "❌ Error al enviar: \(error.localizedDescription)")
         }
     }
 }
