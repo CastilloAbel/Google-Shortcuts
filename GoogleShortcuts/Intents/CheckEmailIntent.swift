@@ -1,4 +1,5 @@
 import AppIntents
+import Foundation
 
 /// App Intent: Consultar los últimos correos recibidos.
 ///
@@ -27,7 +28,7 @@ struct CheckRecentEmailsIntent: AppIntent {
     var count: Int
     
     func perform() async throws -> some IntentResult & ReturnsValue<String> & ProvidesDialog {
-        guard (try? await TokenStorage.shared.loadTokens()) != nil else {
+        guard (try? TokenStorage.shared.loadTokens()) != nil else {
             throw IntentError.notAuthenticated
         }
         
@@ -89,7 +90,7 @@ struct CheckNewEmailsIntent: AppIntent {
     )
     
     func perform() async throws -> some IntentResult & ReturnsValue<String> & ProvidesDialog {
-        guard (try? await TokenStorage.shared.loadTokens()) != nil else {
+        guard (try? TokenStorage.shared.loadTokens()) != nil else {
             throw IntentError.notAuthenticated
         }
         
@@ -131,7 +132,7 @@ struct UnreadCountIntent: AppIntent {
     )
     
     func perform() async throws -> some IntentResult & ReturnsValue<Int> & ProvidesDialog {
-        guard (try? await TokenStorage.shared.loadTokens()) != nil else {
+        guard (try? TokenStorage.shared.loadTokens()) != nil else {
             throw IntentError.notAuthenticated
         }
         
@@ -145,5 +146,59 @@ struct UnreadCountIntent: AppIntent {
             value: count,
             dialog: IntentDialog(stringLiteral: message)
         )
+    }
+}
+
+/// App Intent: Consultar correos Gmail.
+///
+/// Devuelve un resumen de los últimos N correos del inbox.
+/// Útil para automatizaciones que necesitan procesar correos recientes.
+///
+/// ## Ejemplo en Shortcuts:
+/// 1. "Consultar últimos correos" (máx: 5)
+/// 2. "Repetir con cada uno" → Procesar cada correo
+/// 3. "Si contiene 'factura'" → Enviar notificación
+struct CheckEmailIntent: AppIntent {
+    static var title: LocalizedStringResource = "Consultar correos Gmail"
+    static var description: IntentDescription = "Consulta los últimos correos recibidos en Gmail"
+    
+    @Parameter(title: "Cantidad", default: 5)
+    var count: Int
+    
+    @Parameter(title: "Solo no leídos", default: false)
+    var unreadOnly: Bool
+    
+    static var parameterSummary: some ParameterSummary {
+        Summary("Consultar últimos \(\.$count) correos") {
+            \.$unreadOnly
+        }
+    }
+    
+    func perform() async throws -> some IntentResult & ReturnsValue<String> {
+        guard (try? TokenStorage.shared.loadTokens()) != nil else {
+            return .result(value: "❌ No estás autenticado. Abre GoogleShortcuts e inicia sesión.")
+        }
+        
+        do {
+            let emails: [Email]
+            if unreadOnly {
+                emails = try await EmailService.shared.searchEmails(query: "is:unread", maxResults: count)
+            } else {
+                emails = try await EmailService.shared.getRecentEmails(maxResults: count)
+            }
+            
+            if emails.isEmpty {
+                return .result(value: unreadOnly ? "No tienes correos sin leer" : "No se encontraron correos")
+            }
+            
+            let summary = emails.map { email in
+                "• De: \(email.from)\n  Asunto: \(email.subject)"
+            }.joined(separator: "\n\n")
+            
+            let label = unreadOnly ? "no leídos" : "recientes"
+            return .result(value: "📧 \(emails.count) correo(s) \(label):\n\n\(summary)")
+        } catch {
+            return .result(value: "❌ Error: \(error.localizedDescription)")
+        }
     }
 }

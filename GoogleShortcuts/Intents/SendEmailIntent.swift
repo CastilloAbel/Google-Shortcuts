@@ -35,7 +35,7 @@ struct SendEmailIntent: AppIntent {
         
         do {
             let emailService = EmailService.shared
-            try await emailService.sendEmail(to: recipient, subject: subject, body: body)
+            _ = try await emailService.sendEmail(to: recipient, subject: subject, body: body)
             return .result(value: "✅ Correo enviado a \(recipient)")
         } catch {
             return .result(value: "❌ Error al enviar: \(error.localizedDescription)")

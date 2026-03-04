@@ -53,7 +53,7 @@ struct SearchEmailsIntent: AppIntent {
     // MARK: - Execution
     
     func perform() async throws -> some IntentResult & ReturnsValue<String> & ProvidesDialog {
-        guard (try? await TokenStorage.shared.loadTokens()) != nil else {
+        guard (try? TokenStorage.shared.loadTokens()) != nil else {
             throw IntentError.notAuthenticated
         }
         
@@ -95,6 +95,17 @@ struct SearchEmailsIntent: AppIntent {
     static var parameterSummary: some ParameterSummary {
         Summary("Buscar \(\.$query) en \(\.$searchIn)") {
             \.$maxResults
+        }
+    }
+}
+
+enum IntentError: Swift.Error, CustomLocalizedStringResourceConvertible {
+    case notAuthenticated
+    
+    var localizedStringResource: LocalizedStringResource {
+        switch self {
+        case .notAuthenticated:
+            return "No estás autenticado. Abre la app e inicia sesión."
         }
     }
 }

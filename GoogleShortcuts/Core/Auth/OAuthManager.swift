@@ -47,7 +47,7 @@ class OAuthManager: ObservableObject {
     /// Verifica si hay una sesión previa válida.
     private func checkExistingAuth() async {
         do {
-            let tokens = try await TokenStorage.shared.loadTokens()
+            let tokens = try TokenStorage.shared.loadTokens()
             if tokens != nil {
                 isAuthenticated = true
                 await fetchUserEmail()
@@ -202,7 +202,7 @@ class OAuthManager: ObservableObject {
     func logout() async {
         do {
             // Revocar token en Google
-            if let tokens = try await TokenStorage.shared.loadTokens() {
+            if let tokens = try TokenStorage.shared.loadTokens() {
                 var request = URLRequest(url: URL(string: "\(OAuthConfig.revocationEndpoint)?token=\(tokens.accessToken)")!)
                 request.httpMethod = "POST"
                 _ = try? await URLSession.shared.data(for: request)
@@ -210,7 +210,7 @@ class OAuthManager: ObservableObject {
         } catch {}
         
         // Limpiar almacenamiento local
-        await TokenStorage.shared.deleteTokens()
+        TokenStorage.shared.deleteTokens()
         
         isAuthenticated = false
         userEmail = nil

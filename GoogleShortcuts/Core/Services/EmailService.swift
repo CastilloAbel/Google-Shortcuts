@@ -51,6 +51,13 @@ actor EmailService {
         return messageId
     }
     
+    // Asegurar que sendEmail retorna algo (String o Bool)
+    @discardableResult
+    func sendEmail(to recipient: String, subject: String, body: String) async throws -> Bool {
+        try await gmailClient.sendEmail(to: recipient, subject: subject, body: body)
+        return true
+    }
+    
     // MARK: - Fetch Emails
     
     /// Obtiene los últimos correos del inbox.
