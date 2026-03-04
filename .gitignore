@@ -1,33 +1,30 @@
 # Xcode
-*.xcodeproj/
-!*.xcodeproj/project.pbxproj
-*.xcworkspace/
+*.xcodeproj
+*.xcworkspace
 xcuserdata/
-*.xcarchive
 DerivedData/
 build/
 *.pbxuser
 *.mode1v3
 *.mode2v3
 *.perspectivev3
-*.hmap
-*.ipa
-
-# Swift
-.build/
-.swiftpm/
-Package.resolved
+*.xccheckout
+*.moved-aside
 
 # macOS
 .DS_Store
-*.dSYM.zip
-*.dSYM
+*.swp
+*~.nib
 
-# VS Code
-.vscode/
+# Swift Package Manager
+.build/
+Packages/
+Package.pins
+Package.resolved
+*.xcodeproj
 
-# Misc
-*.pem
-*.p12
-*.mobileprovision
-ExportOptions.plist
+# Codemagic
+*.ipa
+
+# Secrets (NUNCA subir)
+**/OAuthConfig.swift

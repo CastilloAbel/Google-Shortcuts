@@ -1,0 +1,81 @@
+workflows:
+  google-shortcuts-build:
+    name: Build GoogleShortcuts IPA
+    max_build_duration: 30
+    instance_type: mac_mini_m2
+    environment:
+      xcode: 15.4
+      vars:
+        BUNDLE_ID: "com.abel.googleshortcuts"
+        APP_NAME: "GoogleShortcuts"
+        # Estas se configuran en Codemagic UI > Environment variables
+        # GOOGLE_CLIENT_ID: (configurar en UI como "Secure")
+      ios_signing:
+        distribution_type: development
+        bundle_identifier: com.abel.googleshortcuts
+    scripts:
+      # 1. Instalar XcodeGen
+      - name: Install XcodeGen
+        script: |
+          brew install xcodegen
+
+      # 2. Inyectar secretos en Info.plist antes de compilar
+      - name: Inject secrets
+        script: |
+          cd $CM_BUILD_DIR
+          # Inyectar GOOGLE_CLIENT_ID en Info.plist
+          /usr/libexec/PlistBuddy -c "Add :GOOGLE_CLIENT_ID string ${GOOGLE_CLIENT_ID}" \
+            GoogleShortcuts/App/Info.plist 2>/dev/null || \
+          /usr/libexec/PlistBuddy -c "Set :GOOGLE_CLIENT_ID ${GOOGLE_CLIENT_ID}" \
+            GoogleShortcuts/App/Info.plist
+          
+          echo "Client ID injected successfully"
+
+      # 3. Generar proyecto Xcode desde project.yml
+      - name: Generate Xcode Project
+        script: |
+          cd $CM_BUILD_DIR
+          xcodegen generate
+
+      # 4. Compilar
+      - name: Build archive
+        script: |
+          cd $CM_BUILD_DIR
+          xcodebuild archive \
+            -project GoogleShortcuts.xcodeproj \
+            -scheme GoogleShortcuts \
+            -destination "generic/platform=iOS" \
+            -archivePath $CM_BUILD_DIR/build/GoogleShortcuts.xcarchive \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            | xcpretty || true
+
+      # 5. Crear .ipa sin firmar
+      - name: Create unsigned IPA
+        script: |
+          APP_PATH=$(find $CM_BUILD_DIR/build/GoogleShortcuts.xcarchive -name "*.app" -type d | head -1)
+          
+          if [ -z "$APP_PATH" ]; then
+            echo "ERROR: No se encontró el .app"
+            exit 1
+          fi
+          
+          mkdir -p $CM_BUILD_DIR/build/Payload
+          cp -r "$APP_PATH" $CM_BUILD_DIR/build/Payload/
+          
+          cd $CM_BUILD_DIR/build
+          zip -r GoogleShortcuts-unsigned.ipa Payload/
+          
+          echo "✅ IPA creada: $(du -h GoogleShortcuts-unsigned.ipa | cut -f1)"
+
+    artifacts:
+      - build/*.ipa
+
+    publishing:
+      email:
+        recipients:
+          - castillokev.abel@gmail.com
+        notify:
+          success: true
+          failure: true
