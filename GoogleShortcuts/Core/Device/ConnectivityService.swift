@@ -98,7 +98,6 @@ final class ConnectivityService {
     
     private func getCellularDataStatus() -> Bool {
         // CTCellularData solo permite saber restric state, NO si está activo
-        let cellularData = CTCellularData()
         // En iOS, si CellularDataRestrictionDidChangeNotification no está activo,
         // asumimos que los datos celulares están disponibles
         return true  // Simplificar: asumir disponible si no está explícitamente restringido

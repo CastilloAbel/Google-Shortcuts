@@ -17,8 +17,8 @@ struct IsBatteryLowIntent: AppIntent {
     static var title: LocalizedStringResource = "¿Batería baja?"
     static var description: IntentDescription = "Verifica si la batería está baja (por defecto < 20%)"
     
-    @Parameter(title: "Umbral (%)", description: "Porcentaje para considerar batería baja")
-    var threshold: Int = 20
+    @Parameter(title: "Umbral (%)", description: "Porcentaje para considerar batería baja", default: 20)
+    var threshold: Int
     
     func perform() async throws -> some IntentResult & ReturnsValue<Bool> {
         let isLow = await DeviceCapabilities.isBatteryLow(threshold: threshold)

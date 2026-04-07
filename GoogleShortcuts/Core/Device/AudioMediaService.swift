@@ -27,40 +27,29 @@ final class AudioMediaService {
     
     /// Obtiene el destino actual de reproducción de audio
     private func getPlaybackDestination() -> AudioMediaStatus.AudioDestination {
-        do {
-            let audioSession = AVAudioSession.sharedInstance()
-            let category = audioSession.category
-            var outputs: [AVAudioSession.Port] = []
-            
-            do {
-                outputs = try AVAudioSession.sharedInstance().currentRoute.outputs.map(\.portType)
-            } catch {
-                return .unknown
+        let audioSession = AVAudioSession.sharedInstance()
+        let outputs = audioSession.currentRoute.outputs.map(\.portType)
+        
+        // Verificar qué dispositivos están conectados
+        for output in outputs {
+            if output == .headphones || output == .headsetMic {
+                return .headphones
             }
-            
-            // Verificar qué dispositivos están conectados
-            for output in outputs {
-                if output == .headphones || output == .headsetMic {
-                    return .headphones
-                }
-                if output == .bluetoothA2DP || output == .bluetoothHFP {
-                    return .bluetoothA2DP
-                }
-                if output == .airPlay {
-                    return .airplay
-                }
-                if output == .hdmi {
-                    return .hdmi
-                }
-                if output == .builtInSpeaker {
-                    return .builtInSpeaker
-                }
+            if output == .bluetoothA2DP || output == .bluetoothHFP {
+                return .bluetoothA2DP
             }
-            
-            return .speaker
-        } catch {
-            return .unknown
+            if output == .airPlay {
+                return .airplay
+            }
+            if output == .HDMI {
+                return .hdmi
+            }
+            if output == .builtInSpeaker {
+                return .builtInSpeaker
+            }
         }
+        
+        return .speaker
     }
     
     /// Verifica si el dispositivo está en modo silencioso
