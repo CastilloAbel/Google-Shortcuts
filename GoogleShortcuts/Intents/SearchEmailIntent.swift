@@ -20,7 +20,7 @@ import AppIntents
 struct SearchEmailsIntent: AppIntent {
     
     static var title: LocalizedStringResource = "Buscar correos en Gmail"
-    static var description = IntentDescription(
+    static var description: IntentDescription = IntentDescription(
         "Busca correos en tu inbox de Gmail por texto, asunto o remitente.",
         categoryName: "Email"
     )
@@ -96,12 +96,6 @@ struct SearchEmailsIntent: AppIntent {
             value: summary,
             dialog: IntentDialog(stringLiteral: "Se encontraron \(limited.count) correo(s).")
         )
-    }
-    
-    static var parameterSummary: some ParameterSummary {
-        Summary("Buscar \(\.$query) en \(\.$searchIn)") {
-            \.$maxResults
-        }
     }
 }
 

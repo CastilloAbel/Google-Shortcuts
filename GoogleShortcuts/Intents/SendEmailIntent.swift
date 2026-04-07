@@ -20,10 +20,6 @@ struct SendEmailIntent: AppIntent {
         self.body = ""
     }
     
-    static var parameterSummary: some ParameterSummary {
-        Summary("Enviar correo a \(\.$recipient) con asunto \(\.$subject)")
-    }
-    
     func perform() async throws -> some IntentResult & ReturnsValue<String> {
         // Verificar autenticación
         guard let tokens = try? TokenStorage.shared.loadTokens() else {

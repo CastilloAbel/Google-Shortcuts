@@ -13,7 +13,7 @@ import Foundation
 struct CheckRecentEmailsIntent: AppIntent {
     
     static var title: LocalizedStringResource = "Consultar últimos correos"
-    static var description = IntentDescription(
+    static var description: IntentDescription = IntentDescription(
         "Obtiene los correos más recientes de tu inbox de Gmail.",
         categoryName: "Email"
     )
@@ -68,10 +68,6 @@ struct CheckRecentEmailsIntent: AppIntent {
             dialog: IntentDialog(stringLiteral: "Se encontraron \(emails.count) correos.")
         )
     }
-    
-    static var parameterSummary: some ParameterSummary {
-        Summary("Obtener los últimos \(\.$count) correos")
-    }
 }
 
 /// App Intent: Verificar si hay correos nuevos no leídos.
@@ -88,7 +84,7 @@ struct CheckRecentEmailsIntent: AppIntent {
 struct CheckNewEmailsIntent: AppIntent {
     
     static var title: LocalizedStringResource = "Verificar correos nuevos"
-    static var description = IntentDescription(
+    static var description: IntentDescription = IntentDescription(
         "Comprueba si hay correos nuevos sin leer en tu inbox.",
         categoryName: "Email"
     )
@@ -130,7 +126,7 @@ struct CheckNewEmailsIntent: AppIntent {
 struct UnreadCountIntent: AppIntent {
     
     static var title: LocalizedStringResource = "Contar correos no leídos"
-    static var description = IntentDescription(
+    static var description: IntentDescription = IntentDescription(
         "Obtiene el número de correos no leídos en tu inbox.",
         categoryName: "Email"
     )
@@ -175,12 +171,6 @@ struct CheckEmailIntent: AppIntent {
     init() {
         self.count = 5
         self.unreadOnly = false
-    }
-    
-    static var parameterSummary: some ParameterSummary {
-        Summary("Consultar últimos \(\.$count) correos") {
-            \.$unreadOnly
-        }
     }
     
     func perform() async throws -> some IntentResult & ReturnsValue<String> {
