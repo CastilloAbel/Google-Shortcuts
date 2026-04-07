@@ -4,6 +4,22 @@ import NetworkExtension
 import CoreTelephony
 import Network
 
+/// Wrapper thread-safe para resultados de conectividad
+private class ConnectivityCheckBox {
+    private let lockQueue = DispatchQueue(label: "connectivity.lock")
+    private var _wiFiConnected: Bool = false
+    
+    var wiFiConnected: Bool {
+        lockQueue.sync { _wiFiConnected }
+    }
+    
+    func setWiFiConnected(_ value: Bool) {
+        lockQueue.async { [weak self] in
+            self?._wiFiConnected = value
+        }
+    }
+}
+
 /// Servicio para acceder a información de conectividad
 actor ConnectivityService {
     static let shared = ConnectivityService()
@@ -46,21 +62,20 @@ actor ConnectivityService {
     
     nonisolated func isWiFiEnabled() -> Bool {
         let monitor = NWPathMonitor()
-        defer { monitor.cancel() }
-        
         let semaphore = DispatchSemaphore(value: 0)
-        var result = false
+        let box = ConnectivityCheckBox()
         
-        monitor.pathUpdateHandler = { path in
-            result = path.usesInterfaceType(.wifi)
+        let queue = DispatchQueue(label: "wifi.check")
+        monitor.pathUpdateHandler = { [box] path in
+            box.setWiFiConnected(path.usesInterfaceType(.wifi))
             semaphore.signal()
         }
         
-        let queue = DispatchQueue(label: "wifi.check")
         monitor.start(queue: queue)
         let _ = semaphore.wait(timeout: .now() + 1.0)
+        monitor.cancel()
         
-        return result
+        return box.wiFiConnected
     }
     
     private nonisolated func getWiFiStatus() -> Bool {
@@ -70,12 +85,7 @@ actor ConnectivityService {
     // MARK: - VPN
     
     func isVPNConnected() -> Bool {
-        let vpnConfiguration = NEVPNManager.shared().loadFromPreferences { [weak self] error in
-            if error != nil {
-                return
-            }
-        }
-        
+        NEVPNManager.shared().loadFromPreferences { _ in }
         return NEVPNManager.shared().connection.status == .connected
     }
     
