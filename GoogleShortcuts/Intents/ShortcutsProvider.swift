@@ -159,8 +159,8 @@ struct GoogleShortcutsShortcutsProvider: AppShortcutsProvider {
             systemImageName: "wifi"
         )
         
-        // MARK: - Device Info
-        
+        // MARK: - Device Info (DISABLED - testing)
+        /*
         AppShortcut(
             intent: GetDeviceModelIntent(),
             phrases: [
@@ -180,6 +180,7 @@ struct GoogleShortcutsShortcutsProvider: AppShortcutsProvider {
             shortTitle: "Versión de iOS",
             systemImageName: "info.circle"
         )
+        */
         
         // MARK: - Rest DISABLED for testing
         /*
