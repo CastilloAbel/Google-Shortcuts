@@ -73,8 +73,6 @@ struct IsWiFiOnIntent: AppIntent {
     }
 }
 
-// TEMPORARILY DISABLED: IsVPNConnectedIntent causes ExtractAppIntentsMetadata error
-/*
 struct IsVPNConnectedIntent: AppIntent {
     static var title: LocalizedStringResource = "¿VPN conectado?"
     static var description: IntentDescription = "Verifica si hay una VPN activa"
@@ -84,7 +82,6 @@ struct IsVPNConnectedIntent: AppIntent {
         return .result(value: status.isVPNConnected)
     }
 }
-*/
 
 struct IsCellularDataOnIntent: AppIntent {
     static var title: LocalizedStringResource = "¿Datos móviles?"

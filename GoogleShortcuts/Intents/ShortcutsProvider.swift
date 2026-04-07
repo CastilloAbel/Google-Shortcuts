@@ -102,6 +102,9 @@ struct GoogleShortcutsShortcutsProvider: AppShortcutsProvider {
             systemImageName: "envelope.badge"
         )
         
+        // MARK: - Device Actions: ALL DISABLED
+        // Temporarily disabled all Device Actions to isolate issue
+        /*
         // MARK: - Device Actions: Battery
         
         AppShortcut(
@@ -159,19 +162,6 @@ struct GoogleShortcutsShortcutsProvider: AppShortcutsProvider {
             systemImageName: "wifi"
         )
         
-        // TEMPORARILY DISABLED: IsVPNConnectedIntent causes ExtractAppIntentsMetadata error
-        /*
-        AppShortcut(
-            intent: IsVPNConnectedIntent(),
-            phrases: [
-                "¿VPN?",
-                "¿VPN activo?"
-            ],
-            shortTitle: "VPN",
-            systemImageName: "network"
-        )
-        */
-        
         AppShortcut(
             intent: IsCellularDataOnIntent(),
             phrases: [
@@ -181,6 +171,112 @@ struct GoogleShortcutsShortcutsProvider: AppShortcutsProvider {
             shortTitle: "Datos Móviles",
             systemImageName: "antenna.radiowaves.left.and.right"
         )
+        
+        // MARK: - Device Actions: Device Info
+        
+        AppShortcut(
+            intent: GetDeviceModelIntent(),
+            phrases: [
+                "¿Qué iPhone tengo?",
+                "Modelo del dispositivo"
+            ],
+            shortTitle: "Modelo del Dispositivo",
+            systemImageName: "iphone"
+        )
+        
+        AppShortcut(
+            intent: GetDeviceNameIntent(),
+            phrases: [
+                "¿Cómo se llama mi iPhone?",
+                "Nombre del dispositivo"
+            ],
+            shortTitle: "Nombre del Dispositivo",
+            systemImageName: "iphone"
+        )
+        
+        AppShortcut(
+            intent: GetiOSVersionIntent(),
+            phrases: [
+                "Versión de iOS",
+                "¿Qué versión de iOS?"
+            ],
+            shortTitle: "Versión de iOS",
+            systemImageName: "info.circle"
+        )
+        
+        // MARK: - Device Actions: Network & Storage
+        
+        AppShortcut(
+            intent: IsOnlineIntent(),
+            phrases: [
+                "¿Internet?",
+                "¿Online?",
+                "¿Conectado?"
+            ],
+            shortTitle: "¿Online?",
+            systemImageName: "globe"
+        )
+        
+        AppShortcut(
+            intent: GetConnectionTypeIntent(),
+            phrases: [
+                "Tipo de conexión",
+                "¿WiFi o datos?"
+            ],
+            shortTitle: "Tipo de Conexión",
+            systemImageName: "network"
+        )
+        
+        AppShortcut(
+            intent: GetAvailableStorageIntent(),
+            phrases: [
+                "Espacio disponible",
+                "¿Cuánto espacio libre?"
+            ],
+            shortTitle: "Espacio Libre",
+            systemImageName: "internaldrive"
+        )
+        
+        AppShortcut(
+            intent: GetTotalStorageIntent(),
+            phrases: [
+                "Almacenamiento total",
+                "¿Cuánto almacenamiento?"
+            ],
+            shortTitle: "Almacenamiento Total",
+            systemImageName: "internaldrive.fill"
+        )
+        
+        AppShortcut(
+            intent: GetScreenBrightnessIntent(),
+            phrases: [
+                "Brillo de pantalla",
+                "¿Cuál es el brillo?"
+            ],
+            shortTitle: "Brillo de Pantalla",
+            systemImageName: "sun.max"
+        )
+        
+        AppShortcut(
+            intent: IsDarkModeOnIntent(),
+            phrases: [
+                "¿Modo oscuro?",
+                "¿Dark mode?"
+            ],
+            shortTitle: "Modo Oscuro",
+            systemImageName: "moon"
+        )
+        
+        AppShortcut(
+            intent: HasNotchOrIslandIntent(),
+            phrases: [
+                "¿Tiene notch?",
+                "¿Dynamic Island?"
+            ],
+            shortTitle: "Notch o Isla",
+            systemImageName: "rectangle.inset.topright"
+        )
+        */
         
         // MARK: - Device Actions: Device Info
         // TEMPORARILY DISABLED: Testing which Device Action causes ExtractAppIntentsMetadata error
