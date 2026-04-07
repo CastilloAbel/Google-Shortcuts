@@ -148,6 +148,17 @@ struct GoogleShortcutsShortcutsProvider: AppShortcutsProvider {
             systemImageName: "bluetooth"
         )
         
+        AppShortcut(
+            intent: IsWiFiOnIntent(),
+            phrases: [
+                "¿WiFi?",
+                "¿WiFi conexión?",
+                "¿Conectado a WiFi?"
+            ],
+            shortTitle: "WiFi",
+            systemImageName: "wifi"
+        )
+        
         // MARK: - Rest DISABLED for testing
         /*
         
