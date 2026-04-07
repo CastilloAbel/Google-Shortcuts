@@ -135,6 +135,40 @@ struct GoogleShortcutsShortcutsProvider: AppShortcutsProvider {
             systemImageName: "bolt.badge"
         )
         
+        // MARK: - Device Actions: Connectivity
+        
+        AppShortcut(
+            intent: IsBluetoothOnIntent(),
+            phrases: [
+                "¿Bluetooth?",
+                "¿Bluetooth activo?",
+                "Bluetooth encendido"
+            ],
+            shortTitle: "Bluetooth",
+            systemImageName: "bluetooth"
+        )
+        
+        AppShortcut(
+            intent: IsWiFiOnIntent(),
+            phrases: [
+                "¿WiFi?",
+                "¿WiFi conexión?",
+                "¿Conectado a WiFi?"
+            ],
+            shortTitle: "WiFi",
+            systemImageName: "wifi"
+        )
+        
+        AppShortcut(
+            intent: IsCellularDataOnIntent(),
+            phrases: [
+                "¿Datos móviles?",
+                "¿Conexión celular?"
+            ],
+            shortTitle: "Datos Móviles",
+            systemImageName: "antenna.radiowaves.left.and.right"
+        )
+        
         // MARK: - Device Actions: Rest DISABLED for testing
         /*
         
