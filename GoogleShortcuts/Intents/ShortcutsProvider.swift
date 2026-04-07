@@ -103,7 +103,8 @@ struct GoogleShortcutsShortcutsProvider: AppShortcutsProvider {
         )
         
         // MARK: - Device Actions: Battery
-        
+        // TEMPORARILY DISABLED FOR DEBUG: Commenting Device Actions to isolate ExtractAppIntentsMetadata error
+        /*
         AppShortcut(
             intent: GetBatteryLevelIntent(),
             phrases: [
@@ -213,5 +214,6 @@ struct GoogleShortcutsShortcutsProvider: AppShortcutsProvider {
             shortTitle: "Espacio Libre",
             systemImageName: "internaldrive"
         )
+        */
     }
 }
