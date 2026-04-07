@@ -32,6 +32,8 @@ targets:
       - path: GoogleShortcuts
         excludes:
           - "**/.DS_Store"
+    resources:
+      - path: GoogleShortcuts/Assets.xcassets
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.abel.googleshortcuts
