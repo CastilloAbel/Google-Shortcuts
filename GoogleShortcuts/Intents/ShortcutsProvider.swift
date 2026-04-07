@@ -103,8 +103,7 @@ struct GoogleShortcutsShortcutsProvider: AppShortcutsProvider {
         )
         
         // MARK: - Device Actions: Battery
-        // TEMPORARILY DISABLED FOR DEBUG: Commenting Device Actions to isolate ExtractAppIntentsMetadata error
-        /*
+        
         AppShortcut(
             intent: GetBatteryLevelIntent(),
             phrases: [
@@ -171,7 +170,8 @@ struct GoogleShortcutsShortcutsProvider: AppShortcutsProvider {
         )
         
         // MARK: - Device Actions: Device Info
-        
+        // TEMPORARILY DISABLED: Testing which Device Action causes ExtractAppIntentsMetadata error
+        /*
         AppShortcut(
             intent: GetDeviceModelIntent(),
             phrases: [
