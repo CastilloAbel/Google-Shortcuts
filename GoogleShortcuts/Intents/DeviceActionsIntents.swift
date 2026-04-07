@@ -8,7 +8,7 @@ struct GetBatteryLevelIntent: AppIntent {
     static var description: IntentDescription = "Devuelve el porcentaje actual de batería"
     
     func perform() async throws -> some IntentResult & ReturnsValue<Int> {
-        let battery = DeviceCapabilities.getBatteryInfo()
+        let battery = await DeviceCapabilities.getBatteryInfo()
         return .result(value: battery.level)
     }
 }
@@ -21,7 +21,7 @@ struct IsBatteryLowIntent: AppIntent {
     var threshold: Int = 20
     
     func perform() async throws -> some IntentResult & ReturnsValue<Bool> {
-        let isLow = DeviceCapabilities.isBatteryLow(threshold: threshold)
+        let isLow = await DeviceCapabilities.isBatteryLow(threshold: threshold)
         return .result(value: isLow)
     }
 }
@@ -31,7 +31,7 @@ struct GetBatteryStateIntent: AppIntent {
     static var description: IntentDescription = "Devuelve si está cargando, cargada, o descargando"
     
     func perform() async throws -> some IntentResult & ReturnsValue<String> {
-        let battery = DeviceCapabilities.getBatteryInfo()
+        let battery = await DeviceCapabilities.getBatteryInfo()
         let state = battery.state.rawValue
         return .result(value: state)
     }
@@ -42,7 +42,7 @@ struct IsLowPowerModeOnIntent: AppIntent {
     static var description: IntentDescription = "Verifica si el modo de bajo consumo está activado"
     
     func perform() async throws -> some IntentResult & ReturnsValue<Bool> {
-        let battery = DeviceCapabilities.getBatteryInfo()
+        let battery = await DeviceCapabilities.getBatteryInfo()
         return .result(value: battery.isLowPowerModeEnabled)
     }
 }
@@ -54,7 +54,7 @@ struct IsBluetoothOnIntent: AppIntent {
     static var description: IntentDescription = "Verifica si Bluetooth está activo"
     
     func perform() async throws -> some IntentResult & ReturnsValue<Bool> {
-        let status = DeviceCapabilities.getConnectivityStatus()
+        let status = await DeviceCapabilities.getConnectivityStatus()
         return .result(value: status.isBluetoothOn)
     }
 }
@@ -64,7 +64,7 @@ struct IsWiFiOnIntent: AppIntent {
     static var description: IntentDescription = "Verifica si WiFi está conectado"
     
     func perform() async throws -> some IntentResult & ReturnsValue<Bool> {
-        let status = DeviceCapabilities.getConnectivityStatus()
+        let status = await DeviceCapabilities.getConnectivityStatus()
         return .result(value: status.isWiFiOn)
     }
 }
@@ -74,7 +74,7 @@ struct IsVPNConnectedIntent: AppIntent {
     static var description: IntentDescription = "Verifica si hay una VPN activa"
     
     func perform() async throws -> some IntentResult & ReturnsValue<Bool> {
-        let status = DeviceCapabilities.getConnectivityStatus()
+        let status = await DeviceCapabilities.getConnectivityStatus()
         return .result(value: status.isVPNConnected)
     }
 }
@@ -84,7 +84,7 @@ struct IsCellularDataOnIntent: AppIntent {
     static var description: IntentDescription = "Verifica si los datos móviles están activados"
     
     func perform() async throws -> some IntentResult & ReturnsValue<Bool> {
-        let status = DeviceCapabilities.getConnectivityStatus()
+        let status = await DeviceCapabilities.getConnectivityStatus()
         return .result(value: status.isCellularDataOn)
     }
 }
@@ -96,7 +96,7 @@ struct GetDeviceModelIntent: AppIntent {
     static var description: IntentDescription = "Devuelve el modelo del iPhone (ej: iPhone 15 Pro)"
     
     func perform() async throws -> some IntentResult & ReturnsValue<String> {
-        let info = DeviceCapabilities.getDeviceInfo()
+        let info = await DeviceCapabilities.getDeviceInfo()
         return .result(value: info.deviceModel)
     }
 }
@@ -106,7 +106,7 @@ struct GetDeviceNameIntent: AppIntent {
     static var description: IntentDescription = "Devuelve el nombre que le diste a tu iPhone"
     
     func perform() async throws -> some IntentResult & ReturnsValue<String> {
-        let info = DeviceCapabilities.getDeviceInfo()
+        let info = await DeviceCapabilities.getDeviceInfo()
         return .result(value: info.deviceName)
     }
 }
@@ -116,7 +116,7 @@ struct GetiOSVersionIntent: AppIntent {
     static var description: IntentDescription = "Devuelve la versión actual de iOS"
     
     func perform() async throws -> some IntentResult & ReturnsValue<String> {
-        let info = DeviceCapabilities.getDeviceInfo()
+        let info = await DeviceCapabilities.getDeviceInfo()
         return .result(value: info.osVersion)
     }
 }
@@ -128,7 +128,7 @@ struct GetAvailableStorageIntent: AppIntent {
     static var description: IntentDescription = "Devuelve el espacio libre en el dispositivo (en GB)"
     
     func perform() async throws -> some IntentResult & ReturnsValue<Double> {
-        let storage = DeviceCapabilities.getDeviceStorage()
+        let storage = await DeviceCapabilities.getDeviceStorage()
         let availableGB = Double(storage.available) / 1_000_000_000
         return .result(value: availableGB)
     }
@@ -139,7 +139,7 @@ struct GetTotalStorageIntent: AppIntent {
     static var description: IntentDescription = "Devuelve el almacenamiento total del dispositivo (en GB)"
     
     func perform() async throws -> some IntentResult & ReturnsValue<Double> {
-        let storage = DeviceCapabilities.getDeviceStorage()
+        let storage = await DeviceCapabilities.getDeviceStorage()
         let totalGB = Double(storage.total) / 1_000_000_000
         return .result(value: totalGB)
     }
@@ -152,7 +152,7 @@ struct IsOnlineIntent: AppIntent {
     static var description: IntentDescription = "Verifica si hay conexión a internet"
     
     func perform() async throws -> some IntentResult & ReturnsValue<Bool> {
-        let isOnline = DeviceCapabilities.isOnline()
+        let isOnline = await DeviceCapabilities.isOnline()
         return .result(value: isOnline)
     }
 }
@@ -162,7 +162,7 @@ struct GetConnectionTypeIntent: AppIntent {
     static var description: IntentDescription = "Devuelve si está en WiFi, datos móviles, o desconectado"
     
     func perform() async throws -> some IntentResult & ReturnsValue<String> {
-        let network = DeviceCapabilities.getNetworkStatus()
+        let network = await DeviceCapabilities.getNetworkStatus()
         return .result(value: network.connectionType.rawValue)
     }
 }

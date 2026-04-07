@@ -146,37 +146,37 @@ public struct DeviceState {
 public enum DeviceCapabilities {
     
     // MARK: Battery
-    static func getBatteryInfo() -> BatteryInfo {
+    static func getBatteryInfo() async -> BatteryInfo {
         BatteryService.shared.getBatteryStatus()
     }
     
-    static func isBatteryLow(threshold: Int = 20) -> Bool {
+    static func isBatteryLow(threshold: Int = 20) async -> Bool {
         BatteryService.shared.isLow(percentage: threshold)
     }
     
     // MARK: Connectivity
-    static func getConnectivityStatus() -> ConnectivityStatus {
+    static func getConnectivityStatus() async -> ConnectivityStatus {
         ConnectivityService.shared.getStatus()
     }
     
-    static func isBluetoothEnabled() -> Bool {
+    static func isBluetoothEnabled() async -> Bool {
         ConnectivityService.shared.isBluetoothEnabled()
     }
     
-    static func isWiFiEnabled() -> Bool {
+    static func isWiFiEnabled() async -> Bool {
         ConnectivityService.shared.isWiFiEnabled()
     }
     
-    static func isVPNConnected() -> Bool {
+    static func isVPNConnected() async -> Bool {
         ConnectivityService.shared.isVPNConnected()
     }
     
     // MARK: Device Motion
-    static func getDeviceMotionData() -> DeviceMotionData {
+    static func getDeviceMotionData() async -> DeviceMotionData {
         MotionService.shared.getMotionData()
     }
     
-    static func getCurrentOrientation() -> UIInterfaceOrientation {
+    static func getCurrentOrientation() async -> UIInterfaceOrientation {
         UIApplication.shared.connectedScenes
             .compactMap { $0 as? UIWindowScene }
             .first?
@@ -184,30 +184,30 @@ public enum DeviceCapabilities {
     }
     
     // MARK: Device Info
-    static func getDeviceInfo() -> DeviceInfo {
+    static func getDeviceInfo() async -> DeviceInfo {
         DeviceInfoService.shared.getInfo()
     }
     
-    static func getDeviceStorage() -> (total: UInt64, available: UInt64) {
+    static func getDeviceStorage() async -> (total: UInt64, available: UInt64) {
         DeviceInfoService.shared.getStorage()
     }
     
     // MARK: Audio & Media
-    static func getAudioMediaStatus() -> AudioMediaStatus {
+    static func getAudioMediaStatus() async -> AudioMediaStatus {
         AudioMediaService.shared.getStatus()
     }
     
     // MARK: Network
-    static func getNetworkStatus() -> NetworkStatus {
+    static func getNetworkStatus() async -> NetworkStatus {
         NetworkService.shared.getStatus()
     }
     
-    static func isOnline() -> Bool {
+    static func isOnline() async -> Bool {
         NetworkService.shared.isOnline()
     }
     
     // MARK: Device State
-    static func getDeviceState() -> DeviceState {
+    static func getDeviceState() async -> DeviceState {
         DeviceStateService.shared.getState()
     }
 }
