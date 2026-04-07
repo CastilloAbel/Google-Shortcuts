@@ -159,6 +159,8 @@ struct GoogleShortcutsShortcutsProvider: AppShortcutsProvider {
             systemImageName: "wifi"
         )
         
+        // TEMPORARILY DISABLED: IsVPNConnectedIntent causes ExtractAppIntentsMetadata error
+        /*
         AppShortcut(
             intent: IsVPNConnectedIntent(),
             phrases: [
@@ -168,9 +170,8 @@ struct GoogleShortcutsShortcutsProvider: AppShortcutsProvider {
             shortTitle: "VPN",
             systemImageName: "network"
         )
+        */
         
-        // TEMPORARILY DISABLED: Testing IsCellularDataOnIntent
-        /*
         AppShortcut(
             intent: IsCellularDataOnIntent(),
             phrases: [
@@ -180,7 +181,6 @@ struct GoogleShortcutsShortcutsProvider: AppShortcutsProvider {
             shortTitle: "Datos Móviles",
             systemImageName: "antenna.radiowaves.left.and.right"
         )
-        */
         
         // MARK: - Device Actions: Device Info
         // TEMPORARILY DISABLED: Testing which Device Action causes ExtractAppIntentsMetadata error
