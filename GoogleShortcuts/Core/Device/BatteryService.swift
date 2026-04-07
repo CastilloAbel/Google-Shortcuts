@@ -2,7 +2,8 @@ import Foundation
 import UIKit
 
 /// Servicio para acceder a información de batería del dispositivo
-actor BatteryService {
+@MainActor
+final class BatteryService {
     static let shared = BatteryService()
     
     private init() {
@@ -10,7 +11,7 @@ actor BatteryService {
     }
     
     /// Obtiene el estado actual de la batería
-    nonisolated func getBatteryStatus() -> BatteryInfo {
+    func getBatteryStatus() -> BatteryInfo {
         let device = UIDevice.current
         let level = Int(device.batteryLevel * 100)
         
@@ -39,7 +40,7 @@ actor BatteryService {
     }
     
     /// Verifica si la batería está baja
-    nonisolated func isLow(percentage: Int) -> Bool {
+    func isLow(percentage: Int) -> Bool {
         Int(UIDevice.current.batteryLevel * 100) <= percentage
     }
 }

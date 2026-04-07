@@ -2,13 +2,14 @@ import Foundation
 import UIKit
 
 /// Servicio para acceder al estado actual del dispositivo
-actor DeviceStateService {
+@MainActor
+final class DeviceStateService {
     static let shared = DeviceStateService()
     
     private init() {}
     
     /// Obtiene el estado actual del dispositivo
-    nonisolated func getState() -> DeviceState {
+    func getState() -> DeviceState {
         let window = UIApplication.shared.connectedScenes
             .compactMap { $0 as? UIWindowScene }
             .first?
@@ -31,7 +32,7 @@ actor DeviceStateService {
     }
     
     /// Verifica si el dispositivo tiene notch o Dynamic Island
-    nonisolated private func hasNotchOrIsland() -> Bool {
+    private func hasNotchOrIsland() -> Bool {
         guard let window = UIApplication.shared.connectedScenes
             .compactMap({ $0 as? UIWindowScene })
             .first?

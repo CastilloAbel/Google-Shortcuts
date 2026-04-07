@@ -3,13 +3,14 @@ import AVFoundation
 import MediaPlayer
 
 /// Servicio para acceder a información de audio y media
-actor AudioMediaService {
+@MainActor
+final class AudioMediaService {
     static let shared = AudioMediaService()
     
     private init() {}
     
     /// Obtiene el estado actual de audio y media
-    nonisolated func getStatus() -> AudioMediaStatus {
+    func getStatus() -> AudioMediaStatus {
         return AudioMediaStatus(
             isAudioPlaying: isAudioPlaying(),
             playbackDestination: getPlaybackDestination(),
@@ -19,7 +20,7 @@ actor AudioMediaService {
     }
     
     /// Verifica si hay audio reproduciéndose
-    nonisolated private func isAudioPlaying() -> Bool {
+    private func isAudioPlaying() -> Bool {
         do {
             let audioSession = AVAudioSession.sharedInstance()
             return audioSession.isOtherAudioPlaying
@@ -29,7 +30,7 @@ actor AudioMediaService {
     }
     
     /// Obtiene el destino actual de reproducción de audio
-    nonisolated private func getPlaybackDestination() -> AudioMediaStatus.AudioDestination {
+    private func getPlaybackDestination() -> AudioMediaStatus.AudioDestination {
         do {
             let audioSession = AVAudioSession.sharedInstance()
             let category = audioSession.category
@@ -67,7 +68,7 @@ actor AudioMediaService {
     }
     
     /// Verifica si el dispositivo está en modo silencioso
-    nonisolated private func isSilentModeOn() -> Bool {
+    private func isSilentModeOn() -> Bool {
         let audioSession = AVAudioSession.sharedInstance()
         // En iOS, el modo silencioso es cuando el switch física está en Silent
         // No hay API directa, pero podemos inferirlo del volumen
@@ -75,7 +76,7 @@ actor AudioMediaService {
     }
     
     /// Obtiene el volumen del sistema (0.0-1.0)
-    nonisolated private func getSystemVolume() -> Float {
+    private func getSystemVolume() -> Float {
         return AVAudioSession.sharedInstance().outputVolume
     }
 }

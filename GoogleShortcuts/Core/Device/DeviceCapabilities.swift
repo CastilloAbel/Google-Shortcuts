@@ -142,6 +142,7 @@ public struct DeviceState {
 // MARK: - Services Factory
 
 /// Acceso centralizado a todos los servicios de capabilidades del dispositivo
+@MainActor
 public enum DeviceCapabilities {
     
     // MARK: Battery

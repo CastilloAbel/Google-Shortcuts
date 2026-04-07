@@ -4,7 +4,8 @@ import CoreLocation
 import UIKit
 
 /// Servicio para acceder a datos de movimiento y sensores del dispositivo
-actor MotionService {
+@MainActor
+final class MotionService {
     static let shared = MotionService()
     
     private let motionManager = CMMotionActivityManager()
@@ -15,7 +16,7 @@ actor MotionService {
     private init() {}
     
     /// Obtiene datos de movimiento del dispositivo
-    nonisolated func getMotionData() -> DeviceMotionData {
+    func getMotionData() -> DeviceMotionData {
         return DeviceMotionData(
             orientation: getCurrentOrientation(),
             motionActivity: getMotionActivity(),
@@ -26,7 +27,7 @@ actor MotionService {
     }
     
     /// Obtiene la orientación actual del dispositivo
-    nonisolated private func getCurrentOrientation() -> UIInterfaceOrientation {
+    private func getCurrentOrientation() -> UIInterfaceOrientation {
         let orientation = UIDevice.current.orientation
         return switch orientation {
         case .portrait, .portraitUpsideDown:
@@ -39,14 +40,14 @@ actor MotionService {
     }
     
     /// Obtiene la actividad de movimiento actual
-    nonisolated private func getMotionActivity() -> DeviceMotionData.MotionActivity {
+    private func getMotionActivity() -> DeviceMotionData.MotionActivity {
         // Requiere NSMotionUsageDescription en Info.plist
         // Por ahora, devolvemos unknown como placeholder
         return .unknown
     }
     
     /// Obtiene el heading de la brújula (0-360°)
-    nonisolated private func getCompassHeading() -> Double? {
+    private func getCompassHeading() -> Double? {
         // Requiere NSLocationWhenInUseUsageDescription
         // Por ahora, devolvemos nil
         return nil

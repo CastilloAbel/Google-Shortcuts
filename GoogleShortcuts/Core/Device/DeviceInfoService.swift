@@ -2,13 +2,14 @@ import Foundation
 import UIKit
 
 /// Servicio para acceder a información del dispositivo
-actor DeviceInfoService {
+@MainActor
+final class DeviceInfoService {
     static let shared = DeviceInfoService()
     
     private init() {}
     
     /// Obtiene información completa del dispositivo
-    nonisolated func getInfo() -> DeviceInfo {
+    func getInfo() -> DeviceInfo {
         let device = UIDevice.current
         
         return DeviceInfo(
@@ -26,7 +27,7 @@ actor DeviceInfoService {
     }
     
     /// Obtiene el modelo del dispositivo (e.g., "iPhone 15 Pro")
-    nonisolated func getDeviceModel() -> String {
+    func getDeviceModel() -> String {
         var systemInfo = utsname()
         uname(&systemInfo)
         let modelCode = withUnsafeBytes(of: &systemInfo.machine) { pointer in
@@ -58,7 +59,7 @@ actor DeviceInfoService {
     }
     
     /// Obtiene el almacenamiento total del dispositivo
-    nonisolated private func getTotalStorage() -> UInt64 {
+    private func getTotalStorage() -> UInt64 {
         guard let space = try? FileManager.default.attributesOfFileSystem(forPath: NSHomeDirectory())[.systemSize] as? NSNumber else {
             return 0
         }
@@ -66,7 +67,7 @@ actor DeviceInfoService {
     }
     
     /// Obtiene el almacenamiento disponible en el dispositivo
-    nonisolated private func getAvailableStorage() -> UInt64 {
+    private func getAvailableStorage() -> UInt64 {
         guard let space = try? FileManager.default.attributesOfFileSystem(forPath: NSHomeDirectory())[.systemFreeSize] as? NSNumber else {
             return 0
         }
@@ -74,7 +75,7 @@ actor DeviceInfoService {
     }
     
     /// Verifica si Dark Mode está habilitado
-    nonisolated private func isDarkModeEnabled() -> Bool {
+    private func isDarkModeEnabled() -> Bool {
         guard let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene else {
             return false
         }
@@ -82,7 +83,7 @@ actor DeviceInfoService {
     }
     
     /// Obtiene información de almacenamiento (total y disponible)
-    nonisolated func getStorage() -> (total: UInt64, available: UInt64) {
+    func getStorage() -> (total: UInt64, available: UInt64) {
         return (
             total: getTotalStorage(),
             available: getAvailableStorage()
