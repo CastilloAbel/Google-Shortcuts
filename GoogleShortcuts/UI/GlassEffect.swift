@@ -27,13 +27,9 @@ struct GlassEffect: ViewModifier {
                         Color.white.opacity(0.3)
                             .blur(radius: 10)
                     }
-                    
-                    // Material glass (iOS 15+)
-                    if #available(iOS 15.0, *) {
-                        colorScheme == .dark ? .thinMaterial : .regularMaterial
-                    }
                 }
             )
+            .background(colorScheme == .dark ? Color.black.opacity(0.05) : Color.white.opacity(0.1))
             .cornerRadius(16)
             .shadow(color: Color.black.opacity(colorScheme == .dark ? 0.3 : 0.1), radius: 8, x: 0, y: 2)
     }
@@ -65,12 +61,9 @@ struct GlassEffectAdvanced: ViewModifier {
                         lightColor.opacity(0.3)
                             .blur(radius: blur)
                     }
-                    
-                    if #available(iOS 15.0, *) {
-                        colorScheme == .dark ? .thinMaterial : .regularMaterial
-                    }
                 }
             )
+            .background(colorScheme == .dark ? Color.black.opacity(0.05) : Color.white.opacity(0.1))
             .cornerRadius(16)
             .shadow(color: Color.black.opacity(colorScheme == .dark ? 0.3 : 0.1), radius: 8, x: 0, y: 2)
     }
