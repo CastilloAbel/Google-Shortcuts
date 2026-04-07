@@ -159,14 +159,26 @@ struct GoogleShortcutsShortcutsProvider: AppShortcutsProvider {
             systemImageName: "wifi"
         )
         
+        // MARK: - Device Info
+        
         AppShortcut(
-            intent: IsCellularDataOnIntent(),
+            intent: GetDeviceModelIntent(),
             phrases: [
-                "¿Datos móviles?",
-                "¿Conexión celular?"
+                "¿Qué iPhone tengo?",
+                "Modelo del dispositivo"
             ],
-            shortTitle: "Datos Móviles",
-            systemImageName: "antenna.radiowaves.left.and.right"
+            shortTitle: "Modelo del Dispositivo",
+            systemImageName: "iphone"
+        )
+        
+        AppShortcut(
+            intent: GetiOSVersionIntent(),
+            phrases: [
+                "Versión de iOS",
+                "¿Qué versión de iOS?"
+            ],
+            shortTitle: "Versión de iOS",
+            systemImageName: "info.circle"
         )
         
         // MARK: - Rest DISABLED for testing

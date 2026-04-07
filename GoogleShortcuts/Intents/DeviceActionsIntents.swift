@@ -83,6 +83,8 @@ struct IsVPNConnectedIntent: AppIntent {
     }
 }
 
+// TEMPORARILY DISABLED: IsCellularDataOnIntent causes ExtractAppIntentsMetadata error
+/*
 struct IsCellularDataOnIntent: AppIntent {
     static var title: LocalizedStringResource = "¿Datos móviles?"
     static var description: IntentDescription = "Verifica si los datos móviles están activados"
@@ -92,6 +94,7 @@ struct IsCellularDataOnIntent: AppIntent {
         return .result(value: status.isCellularDataOn)
     }
 }
+*/
 
 // MARK: - Device Info Intents
 
