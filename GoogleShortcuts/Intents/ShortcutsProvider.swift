@@ -148,28 +148,7 @@ struct GoogleShortcutsShortcutsProvider: AppShortcutsProvider {
             systemImageName: "bluetooth"
         )
         
-        AppShortcut(
-            intent: IsWiFiOnIntent(),
-            phrases: [
-                "¿WiFi?",
-                "¿WiFi conexión?",
-                "¿Conectado a WiFi?"
-            ],
-            shortTitle: "WiFi",
-            systemImageName: "wifi"
-        )
-        
-        AppShortcut(
-            intent: IsCellularDataOnIntent(),
-            phrases: [
-                "¿Datos móviles?",
-                "¿Conexión celular?"
-            ],
-            shortTitle: "Datos Móviles",
-            systemImageName: "antenna.radiowaves.left.and.right"
-        )
-        
-        // MARK: - Device Actions: Rest DISABLED for testing
+        // MARK: - Rest DISABLED for testing
         /*
         
         AppShortcut(
