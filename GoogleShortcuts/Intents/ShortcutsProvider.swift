@@ -148,8 +148,6 @@ struct GoogleShortcutsShortcutsProvider: AppShortcutsProvider {
             systemImageName: "bluetooth"
         )
         
-        // TEMPORARILY DISABLED: Testing remaining Connectivity Device Actions
-        /*
         AppShortcut(
             intent: IsWiFiOnIntent(),
             phrases: [
@@ -161,6 +159,8 @@ struct GoogleShortcutsShortcutsProvider: AppShortcutsProvider {
             systemImageName: "wifi"
         )
         
+        // TEMPORARILY DISABLED: Testing IsVPNConnectedIntent
+        /*
         AppShortcut(
             intent: IsVPNConnectedIntent(),
             phrases: [
