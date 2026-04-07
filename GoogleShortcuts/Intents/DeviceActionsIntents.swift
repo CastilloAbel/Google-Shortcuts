@@ -20,6 +20,10 @@ struct IsBatteryLowIntent: AppIntent {
     @Parameter(title: "Umbral (%)", description: "Porcentaje para considerar batería baja", default: 20)
     var threshold: Int
     
+    init() {
+        self.threshold = 20
+    }
+    
     func perform() async throws -> some IntentResult & ReturnsValue<Bool> {
         let isLow = await DeviceCapabilities.isBatteryLow(threshold: threshold)
         return .result(value: isLow)
