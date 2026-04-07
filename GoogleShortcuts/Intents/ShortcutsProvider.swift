@@ -159,8 +159,6 @@ struct GoogleShortcutsShortcutsProvider: AppShortcutsProvider {
             systemImageName: "wifi"
         )
         
-        // TEMPORARILY DISABLED: Testing IsVPNConnectedIntent
-        /*
         AppShortcut(
             intent: IsVPNConnectedIntent(),
             phrases: [
@@ -169,6 +167,18 @@ struct GoogleShortcutsShortcutsProvider: AppShortcutsProvider {
             ],
             shortTitle: "VPN",
             systemImageName: "network"
+        )
+        
+        // TEMPORARILY DISABLED: Testing IsCellularDataOnIntent
+        /*
+        AppShortcut(
+            intent: IsCellularDataOnIntent(),
+            phrases: [
+                "¿Datos móviles?",
+                "¿Conexión celular?"
+            ],
+            shortTitle: "Datos Móviles",
+            systemImageName: "antenna.radiowaves.left.and.right"
         )
         */
         
