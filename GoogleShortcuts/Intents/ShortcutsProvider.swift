@@ -136,8 +136,7 @@ struct GoogleShortcutsShortcutsProvider: AppShortcutsProvider {
         )
         
         // MARK: - Device Actions: Connectivity
-        // TEMPORARILY DISABLED: Testing Connectivity Device Actions
-        /*
+        
         AppShortcut(
             intent: IsBluetoothOnIntent(),
             phrases: [
@@ -149,6 +148,8 @@ struct GoogleShortcutsShortcutsProvider: AppShortcutsProvider {
             systemImageName: "bluetooth"
         )
         
+        // TEMPORARILY DISABLED: Testing remaining Connectivity Device Actions
+        /*
         AppShortcut(
             intent: IsWiFiOnIntent(),
             phrases: [
