@@ -15,7 +15,7 @@ enum OAuthConfig {
     /// Formato: XXXXXXXXXXXX-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.apps.googleusercontent.com
     ///
     /// ⚠️ REEMPLAZAR con tu Client ID real.
-    static let clientID = "YOUR_CLIENT_ID.apps.googleusercontent.com"
+    static let clientID = "25887787070-g1q6h2806850edpgllg3eboeot43e79p.apps.googleusercontent.com"
     
     /// Redirect URI registrada en Google Cloud Console.
     /// Para apps iOS, Google usa el scheme reverso del Client ID.

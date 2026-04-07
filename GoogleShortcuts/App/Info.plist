@@ -38,7 +38,7 @@
                 <!-- URL Scheme propio para deep links -->
                 <string>googleshortcuts</string>
                 <!-- Redirect URI para OAuth de Google (reemplazar con tu Client ID) -->
-                <string>com.googleusercontent.apps.YOUR_CLIENT_ID</string>
+                <string>com.googleusercontent.apps.25887787070-g1q6h2806850edpgllg3eboeot43e79p.oauthredirect</string>
             </array>
         </dict>
     </array>
