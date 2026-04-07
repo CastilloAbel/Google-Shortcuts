@@ -136,7 +136,8 @@ struct GoogleShortcutsShortcutsProvider: AppShortcutsProvider {
         )
         
         // MARK: - Device Actions: Connectivity
-        
+        // TEMPORARILY DISABLED: Testing Connectivity Device Actions
+        /*
         AppShortcut(
             intent: IsBluetoothOnIntent(),
             phrases: [
@@ -168,6 +169,7 @@ struct GoogleShortcutsShortcutsProvider: AppShortcutsProvider {
             shortTitle: "VPN",
             systemImageName: "network"
         )
+        */
         
         // MARK: - Device Actions: Device Info
         // TEMPORARILY DISABLED: Testing which Device Action causes ExtractAppIntentsMetadata error
