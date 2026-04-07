@@ -159,6 +159,16 @@ struct GoogleShortcutsShortcutsProvider: AppShortcutsProvider {
             systemImageName: "wifi"
         )
         
+        AppShortcut(
+            intent: IsCellularDataOnIntent(),
+            phrases: [
+                "¿Datos móviles?",
+                "¿Conexión celular?"
+            ],
+            shortTitle: "Datos Móviles",
+            systemImageName: "antenna.radiowaves.left.and.right"
+        )
+        
         // MARK: - Rest DISABLED for testing
         /*
         
