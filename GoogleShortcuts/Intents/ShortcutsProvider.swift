@@ -102,9 +102,6 @@ struct GoogleShortcutsShortcutsProvider: AppShortcutsProvider {
             systemImageName: "envelope.badge"
         )
         
-        // MARK: - Device Actions: ALL DISABLED
-        // Temporarily disabled all Device Actions to isolate issue
-        /*
         // MARK: - Device Actions: Battery
         
         AppShortcut(
@@ -138,7 +135,8 @@ struct GoogleShortcutsShortcutsProvider: AppShortcutsProvider {
             systemImageName: "bolt.badge"
         )
         
-        // MARK: - Device Actions: Connectivity
+        // MARK: - Device Actions: Rest DISABLED for testing
+        /*
         
         AppShortcut(
             intent: IsBluetoothOnIntent(),
