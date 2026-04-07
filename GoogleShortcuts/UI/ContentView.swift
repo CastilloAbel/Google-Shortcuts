@@ -75,7 +75,7 @@ struct SendEmailView: View {
                 
                 Section {
                     Button(action: {
-                        Task { await sendEmail() }
+                        Task { sendEmail() }
                     }) {
                         HStack {
                             if isSending {

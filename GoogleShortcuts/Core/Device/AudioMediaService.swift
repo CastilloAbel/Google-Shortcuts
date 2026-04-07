@@ -21,12 +21,8 @@ final class AudioMediaService {
     
     /// Verifica si hay audio reproduciéndose
     private func isAudioPlaying() -> Bool {
-        do {
-            let audioSession = AVAudioSession.sharedInstance()
-            return audioSession.isOtherAudioPlaying
-        } catch {
-            return false
-        }
+        let audioSession = AVAudioSession.sharedInstance()
+        return audioSession.isOtherAudioPlaying
     }
     
     /// Obtiene el destino actual de reproducción de audio
