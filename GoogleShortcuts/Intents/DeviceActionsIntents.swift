@@ -174,7 +174,7 @@ struct GetScreenBrightnessIntent: AppIntent {
     static var description: IntentDescription = "Devuelve el nivel de brillo actual (0-100%)"
     
     func perform() async throws -> some IntentResult & ReturnsValue<Int> {
-        let info = DeviceCapabilities.getDeviceInfo()
+        let info = await DeviceCapabilities.getDeviceInfo()
         let brightness = Int(info.screenBrightness * 100)
         return .result(value: brightness)
     }
@@ -185,7 +185,7 @@ struct IsDarkModeOnIntent: AppIntent {
     static var description: IntentDescription = "Verifica si el modo oscuro está activado"
     
     func perform() async throws -> some IntentResult & ReturnsValue<Bool> {
-        let info = DeviceCapabilities.getDeviceInfo()
+        let info = await DeviceCapabilities.getDeviceInfo()
         return .result(value: info.isDarkModeEnabled)
     }
 }
@@ -195,7 +195,7 @@ struct HasNotchOrIslandIntent: AppIntent {
     static var description: IntentDescription = "Verifica si el dispositivo tiene notch o Dynamic Island"
     
     func perform() async throws -> some IntentResult & ReturnsValue<Bool> {
-        let state = DeviceCapabilities.getDeviceState()
+        let state = await DeviceCapabilities.getDeviceState()
         return .result(value: state.hasNotchOrDynamicIsland)
     }
 }

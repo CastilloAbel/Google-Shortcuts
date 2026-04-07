@@ -21,7 +21,8 @@ private class ConnectivityCheckBox {
 }
 
 /// Servicio para acceder a información de conectividad
-actor ConnectivityService {
+@MainActor
+final class ConnectivityService {
     static let shared = ConnectivityService()
     
     private var bluetoothManager: CBCentralManager?
@@ -33,7 +34,7 @@ actor ConnectivityService {
     }
     
     /// Obtiene el estado actual de conectividad
-    nonisolated func getStatus() -> ConnectivityStatus {
+    func getStatus() -> ConnectivityStatus {
         return ConnectivityStatus(
             isBluetoothOn: getBluetoothStatus(),
             isWiFiOn: getWiFiStatus(),
@@ -46,13 +47,13 @@ actor ConnectivityService {
     
     // MARK: - Bluetooth
     
-    nonisolated func isBluetoothEnabled() -> Bool {
+    func isBluetoothEnabled() -> Bool {
         // Nota: En iOS real, necesitarías NSBluetoothPeripheralUsageDescription
         // Por ahora, devolvemos una aproximación básica
         return true  // Placeholder - requiere CBCentralManager delegate
     }
     
-    private nonisolated func getBluetoothStatus() -> Bool {
+    private func getBluetoothStatus() -> Bool {
         // Requiere permisos y CBCentralManager setup completo
         // Por ahora, devolvemos estado desconocido
         return false  // Placeholder
@@ -60,7 +61,7 @@ actor ConnectivityService {
     
     // MARK: - WiFi
     
-    nonisolated func isWiFiEnabled() -> Bool {
+    func isWiFiEnabled() -> Bool {
         let monitor = NWPathMonitor()
         let semaphore = DispatchSemaphore(value: 0)
         let box = ConnectivityCheckBox()
@@ -78,7 +79,7 @@ actor ConnectivityService {
         return box.wiFiConnected
     }
     
-    private nonisolated func getWiFiStatus() -> Bool {
+    private func getWiFiStatus() -> Bool {
         isWiFiEnabled()
     }
     
@@ -89,13 +90,13 @@ actor ConnectivityService {
         return NEVPNManager.shared().connection.status == .connected
     }
     
-    private nonisolated func getVPNStatus() -> Bool {
+    private func getVPNStatus() -> Bool {
         NEVPNManager.shared().connection.status == .connected
     }
     
     // MARK: - Cellular Data
     
-    private nonisolated func getCellularDataStatus() -> Bool {
+    private func getCellularDataStatus() -> Bool {
         // CTCellularData solo permite saber restric state, NO si está activo
         let cellularData = CTCellularData()
         let restrictedState = cellularData.restrictedStateForCellularData
@@ -104,14 +105,14 @@ actor ConnectivityService {
         return restrictedState != .restricted
     }
     
-    private nonisolated func isLowDataModeEnabled() -> Bool {
+    private func isLowDataModeEnabled() -> Bool {
         // Disponible en iOS 13+
         return URLSessionConfiguration.default.waitsForConnectivity
     }
     
     // MARK: - Cellular Technology
     
-    private nonisolated func getActiveCellularTechnology() -> ConnectivityStatus.CellularTechnology? {
+    private func getActiveCellularTechnology() -> ConnectivityStatus.CellularTechnology? {
         let networkInfo = CTTelephonyNetworkInfo()
         guard let currentRadio = networkInfo.serviceCurrentRadioAccessTechnology?.values.first else {
             return nil

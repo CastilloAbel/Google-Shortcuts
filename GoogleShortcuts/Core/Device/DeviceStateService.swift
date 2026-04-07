@@ -19,7 +19,7 @@ final class DeviceStateService {
         let safeAreaInsets = window?.safeAreaInsets ?? .zero
         
         return DeviceState(
-            isDeviceLocked: UIDevice.current.isProtectedDataAvailable == false,
+            isDeviceLocked: false,  // UIDevice no expone estado de lock directamente
             isScreenOn: UIScreen.main.brightness > 0,
             hasNotchOrDynamicIsland: hasNotchOrIsland(),
             safeAreaInsets: DeviceState.SafeAreaInfo(
