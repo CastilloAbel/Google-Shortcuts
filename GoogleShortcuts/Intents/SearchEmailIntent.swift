@@ -50,6 +50,12 @@ struct SearchEmailsIntent: AppIntent {
     )
     var searchIn: SearchScope
     
+    init() {
+        self.query = ""
+        self.maxResults = 10
+        self.searchIn = .everywhere
+    }
+    
     // MARK: - Execution
     
     func perform() async throws -> some IntentResult & ReturnsValue<String> & ProvidesDialog {

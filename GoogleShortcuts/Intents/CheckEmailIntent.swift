@@ -27,6 +27,10 @@ struct CheckRecentEmailsIntent: AppIntent {
     )
     var count: Int
     
+    init() {
+        self.count = 5
+    }
+    
     func perform() async throws -> some IntentResult & ReturnsValue<String> & ProvidesDialog {
         guard (try? TokenStorage.shared.loadTokens()) != nil else {
             throw IntentError.notAuthenticated
@@ -167,6 +171,11 @@ struct CheckEmailIntent: AppIntent {
     
     @Parameter(title: "Solo no leídos", default: false)
     var unreadOnly: Bool
+    
+    init() {
+        self.count = 5
+        self.unreadOnly = false
+    }
     
     static var parameterSummary: some ParameterSummary {
         Summary("Consultar últimos \(\.$count) correos") {

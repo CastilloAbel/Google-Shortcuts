@@ -14,6 +14,12 @@ struct SendEmailIntent: AppIntent {
     @Parameter(title: "Cuerpo", description: "Contenido del correo")
     var body: String
     
+    init() {
+        self.recipient = ""
+        self.subject = ""
+        self.body = ""
+    }
+    
     static var parameterSummary: some ParameterSummary {
         Summary("Enviar correo a \(\.$recipient) con asunto \(\.$subject)")
     }
