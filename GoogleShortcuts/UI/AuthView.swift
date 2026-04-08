@@ -178,9 +178,6 @@ struct AuthView: View {
         }
     }
 }
-        }
-    }
-}
 
 /// Fila de permiso individual.
 struct PermissionRow: View {
