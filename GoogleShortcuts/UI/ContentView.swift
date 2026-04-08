@@ -2,29 +2,50 @@ import SwiftUI
 
 /// Vista principal de la app.
 ///
-/// Muestra:
-/// - Estado de autenticación
-/// - Si autenticado: vista de correos con tabs
-/// - Si no autenticado: pantalla de login
+/// Muestra un TabView con:
+/// - Tab 1: Gmail (requiere autenticación con Google)
+/// - Tab 2: Device Actions (sin autenticación)
 struct ContentView: View {
     
     @EnvironmentObject var authManager: OAuthManager
     
+    @State private var selectedTab: Int = 0
+    
     var body: some View {
-        Group {
-            if authManager.isAuthenticated {
-                MainTabView()
-            } else {
-                AuthView()
+        ZStack {
+            // Fondo responsive al tema
+            Color(.systemBackground)
+                .ignoresSafeArea()
+            
+            TabView(selection: $selectedTab) {
+                // MARK: - Tab 1: Gmail
+                Group {
+                    if authManager.isAuthenticated {
+                        GmailTabView()
+                    } else {
+                        AuthView()
+                    }
+                }
+                .tag(0)
+                .tabItem {
+                    Label("Gmail", systemImage: "envelope.fill")
+                }
+                
+                // MARK: - Tab 2: Device Actions
+                DeviceActionsView()
+                    .tag(1)
+                    .tabItem {
+                        Label("Dispositivo", systemImage: "iphone")
+                    }
             }
+            .glassEffect()  // Aplicar efecto glass a transiciones
         }
         .animation(.easeInOut, value: authManager.isAuthenticated)
     }
 }
 
-/// Vista con tabs para la navegación principal.
-struct MainTabView: View {
-    
+/// Vista con contenido de Gmail (tabs de Inbox, Enviar, Ajustes).
+struct GmailTabView: View {
     var body: some View {
         TabView {
             EmailListView()

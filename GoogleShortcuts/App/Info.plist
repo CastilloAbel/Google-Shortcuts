@@ -5,7 +5,7 @@
     <key>CFBundleDevelopmentRegion</key>
     <string>es</string>
     <key>CFBundleDisplayName</key>
-    <string>GmailShortcuts</string>
+    <string>Google Shortcuts</string>
     <key>CFBundleExecutable</key>
     <string>$(EXECUTABLE_NAME)</string>
     <key>CFBundleIdentifier</key>
@@ -37,8 +37,8 @@
             <array>
                 <!-- URL Scheme propio para deep links -->
                 <string>googleshortcuts</string>
-                <!-- Redirect URI para OAuth de Google (reemplazar con tu Client ID) -->
-                <string>com.googleusercontent.apps.25887787070-g1q6h2806850edpgllg3eboeot43e79p.oauthredirect</string>
+                <!-- OAuth2 Redirect URI scheme (Google redirige a: scheme:/oauthredirect) -->
+                <string>com.googleusercontent.apps.25887787070-g1q6h2806850edpgllg3eboeot43e79p</string>
             </array>
         </dict>
     </array>
