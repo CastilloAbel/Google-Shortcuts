@@ -138,6 +138,10 @@ struct AuthView: View {
                 .padding(16)
             }
         }
+    }
+}
+
+// MARK: - Supporting Views
 
 /// Fila de permiso individual.
 struct PermissionRow: View {
