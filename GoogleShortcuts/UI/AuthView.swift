@@ -13,19 +13,19 @@ struct AuthView: View {
     
     var body: some View {
         ZStack {
-            // Fondo
+            // Fondo que ocupa toda la pantalla
             Color(.systemBackground)
                 .ignoresSafeArea()
             
             // Contenido
             VStack(spacing: 0) {
+                // Contenido scrolleable
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: 20) {
-                        // Espaciador superior
                         Spacer()
                             .frame(height: 20)
                         
-                        // Logo / icono
+                        // Logo
                         Image(systemName: "envelope.badge.shield.half.filled")
                             .font(.system(size: 60))
                             .foregroundStyle(.blue, .gray)
@@ -34,7 +34,6 @@ struct AuthView: View {
                         VStack(spacing: 6) {
                             Text("Google Shortcuts")
                                 .font(.title3.bold())
-                            
                             Text("Automatiza Gmail y tu dispositivo")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
@@ -44,7 +43,7 @@ struct AuthView: View {
                         Spacer()
                             .frame(height: 12)
                         
-                        // Sección: Atajos de Gmail
+                        // Sección Gmail
                         VStack(alignment: .leading, spacing: 10) {
                             Label("Atajos Gmail", systemImage: "mail.fill")
                                 .font(.caption.bold())
@@ -60,7 +59,7 @@ struct AuthView: View {
                         .cornerRadius(12)
                         .padding(.horizontal, 16)
                         
-                        // Sección: Atajos de Dispositivo
+                        // Sección Dispositivo
                         VStack(alignment: .leading, spacing: 10) {
                             Label("Atajos del Dispositivo", systemImage: "iphone")
                                 .font(.caption.bold())
@@ -85,10 +84,10 @@ struct AuthView: View {
                         Spacer()
                             .frame(height: 12)
                     }
+                    .frame(maxWidth: .infinity)
                 }
-                .frame(maxHeight: .infinity)
                 
-                // Botones (siempre visibles en el fondo)
+                // Botones SIEMPRE visibles en el fondo
                 VStack(spacing: 12) {
                     // Conectar con Google
                     Button(action: { authManager.startLogin() }) {
@@ -124,7 +123,7 @@ struct AuthView: View {
                         .cornerRadius(12)
                     }
                     
-                    // Error message
+                    // Error
                     if let error = authManager.error {
                         Text(error)
                             .font(.caption2)
@@ -137,6 +136,7 @@ struct AuthView: View {
                 }
                 .padding(16)
             }
+            .frame(maxHeight: .infinity, alignment: .topLeading)
         }
     }
 }

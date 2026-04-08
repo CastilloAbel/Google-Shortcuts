@@ -18,14 +18,15 @@ enum OAuthConfig {
     static let clientID = "25887787070-g1q6h2806850edpgllg3eboeot43e79p.apps.googleusercontent.com"
     
     /// Redirect URI registrada en Google Cloud Console.
-    /// Para apps iOS, Google usa el scheme reverso del Client ID.
-    /// Formato: com.googleusercontent.apps.YOUR_CLIENT_ID://oauthredirect
+    /// Para apps iOS, Google solo requiere el scheme (sin la ruta).
+    /// El sistema iOS maneja automáticamente `scheme://oauthredirect?code=...`
     ///
-    /// Este scheme debe coincidir con el registrado en Info.plist > CFBundleURLSchemes
+    /// Este scheme debe coincidir EXACTAMENTE con el "Esquema de URL de iOS"
+    /// registrado en Google Cloud Console
     static var redirectURI: String {
         let reversed = clientID
             .replacingOccurrences(of: ".apps.googleusercontent.com", with: "")
-        return "com.googleusercontent.apps.\(reversed)://oauthredirect"
+        return "com.googleusercontent.apps.\(reversed)"
     }
     
     // MARK: - OAuth2 Endpoints
