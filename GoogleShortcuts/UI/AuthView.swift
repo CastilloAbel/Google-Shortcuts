@@ -12,16 +12,18 @@ struct AuthView: View {
     @State private var showDeviceActions = false
     
     var body: some View {
-        NavigationStack {
-            ZStack {
-                // Fondo en modo oscuro/claro
-                Color(.systemBackground)
-                    .ignoresSafeArea()
-                
-                ScrollView {
+        ZStack {
+            // Fondo
+            Color(.systemBackground)
+                .ignoresSafeArea()
+            
+            // Contenido
+            VStack(spacing: 0) {
+                ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: 20) {
+                        // Espaciador superior
                         Spacer()
-                            .frame(height: 16)
+                            .frame(height: 20)
                         
                         // Logo / icono
                         Image(systemName: "envelope.badge.shield.half.filled")
@@ -36,7 +38,6 @@ struct AuthView: View {
                             Text("Automatiza Gmail y tu dispositivo")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
-                                .lineLimit(2)
                         }
                         .multilineTextAlignment(.center)
                         
@@ -49,33 +50,15 @@ struct AuthView: View {
                                 .font(.caption.bold())
                                 .foregroundStyle(.blue)
                             
-                            PermissionRow(
-                                icon: "paperplane.fill",
-                                text: "Enviar correos",
-                                color: .blue
-                            )
-                            PermissionRow(
-                                icon: "envelope.open.fill",
-                                text: "Leer correos",
-                                color: .green
-                            )
-                            PermissionRow(
-                                icon: "magnifyingglass",
-                                text: "Buscar correos",
-                                color: .orange
-                            )
-                            PermissionRow(
-                                icon: "bell.fill",
-                                text: "Verificar nuevos",
-                                color: .purple
-                            )
+                            PermissionRow(icon: "paperplane.fill", text: "Enviar correos", color: .blue)
+                            PermissionRow(icon: "envelope.open.fill", text: "Leer correos", color: .green)
+                            PermissionRow(icon: "magnifyingglass", text: "Buscar correos", color: .orange)
+                            PermissionRow(icon: "bell.fill", text: "Verificar nuevos", color: .purple)
                         }
                         .padding(12)
                         .background(Color(.systemGray6))
                         .cornerRadius(12)
-                        
-                        Spacer()
-                            .frame(height: 8)
+                        .padding(.horizontal, 16)
                         
                         // Sección: Atajos de Dispositivo
                         VStack(alignment: .leading, spacing: 10) {
@@ -83,101 +66,78 @@ struct AuthView: View {
                                 .font(.caption.bold())
                                 .foregroundStyle(.green)
                             
-                            PermissionRow(
-                                icon: "battery.50percent",
-                                text: "Nivel de batería",
-                                color: .green
-                            )
-                            PermissionRow(
-                                icon: "bluetooth",
-                                text: "Estado Bluetooth/WiFi",
-                                color: .blue
-                            )
-                            PermissionRow(
-                                icon: "iphone.gen3",
-                                text: "Info del dispositivo",
-                                color: .orange
-                            )
+                            PermissionRow(icon: "battery.50", text: "Nivel de batería", color: .green)
+                            PermissionRow(icon: "bluetooth", text: "Estado Bluetooth/WiFi", color: .blue)
+                            PermissionRow(icon: "iphone.gen3", text: "Info del dispositivo", color: .orange)
                         }
                         .padding(12)
                         .background(Color(.systemGray6))
                         .cornerRadius(12)
-                        
-                        Spacer()
-                            .frame(height: 16)
-                        
-                        // Botones de acción
-                        VStack(spacing: 12) {
-                            // Conectar con Google
-                            Button(action: { authManager.startLogin() }) {
-                                HStack(spacing: 10) {
-                                    if authManager.isLoading {
-                                        ProgressView()
-                                            .tint(.white)
-                                    } else {
-                                        Image(systemName: "person.badge.key.fill")
-                                    }
-                                    Text(authManager.isLoading ? "Conectando..." : "Conectar con Google")
-                                        .font(.system(.body, design: .rounded))
-                                        .fontWeight(.semibold)
-                                }
-                                .frame(maxWidth: .infinity)
-                                .padding(12)
-                                .background(authManager.isLoading ? Color.gray : Color.blue)
-                                .foregroundColor(.white)
-                                .cornerRadius(12)
-                            }
-                            .disabled(authManager.isLoading)
-                            
-                            // Omitir - Usar solo atajos de dispositivo
-                            Button(action: { showDeviceActions = true }) {
-                                HStack(spacing: 10) {
-                                    Image(systemName: "arrow.right.circle")
-                                    Text("Usar Atajos del Dispositivo")
-                                        .font(.system(.body, design: .rounded))
-                                        .fontWeight(.semibold)
-                                }
-                                .frame(maxWidth: .infinity)
-                                .padding(12)
-                                .background(Color(.systemGray6))
-                                .foregroundColor(.primary)
-                                .cornerRadius(12)
-                            }
-                        }
-                        .padding(.horizontal)
-                        
-                        // Error message
-                        if let error = authManager.error {
-                            Text(error)
-                                .font(.caption2)
-                                .foregroundColor(.red)
-                                .multilineTextAlignment(.center)
-                                .padding(12)
-                                .background(Color.red.opacity(0.1))
-                                .cornerRadius(8)
-                                .padding(.horizontal)
-                        }
+                        .padding(.horizontal, 16)
                         
                         // Nota legal
-                        Text("Los datos se guardan localmente en tu dispositivo. No se envía información a servidores externos.")
+                        Text("Los datos se guardan localmente en tu dispositivo.")
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)
-                            .padding(.horizontal, 20)
+                            .padding(.horizontal, 16)
                         
                         Spacer()
-                            .frame(height: 20)
+                            .frame(height: 12)
                     }
-                    .padding(.horizontal, 16)
                 }
-            }
-            .navigationDestination(isPresented: $showDeviceActions) {
-                DeviceActionsView()
-                    .navigationBarBackButtonHidden(false)
+                .frame(maxHeight: .infinity)
+                
+                // Botones (siempre visibles en el fondo)
+                VStack(spacing: 12) {
+                    // Conectar con Google
+                    Button(action: { authManager.startLogin() }) {
+                        HStack(spacing: 10) {
+                            if authManager.isLoading {
+                                ProgressView()
+                                    .tint(.white)
+                            } else {
+                                Image(systemName: "person.badge.key.fill")
+                            }
+                            Text(authManager.isLoading ? "Conectando..." : "Conectar con Google")
+                                .fontWeight(.semibold)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(12)
+                        .background(authManager.isLoading ? Color.gray : Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(12)
+                    }
+                    .disabled(authManager.isLoading)
+                    
+                    // Omitir
+                    NavigationLink(destination: DeviceActionsView()) {
+                        HStack(spacing: 10) {
+                            Image(systemName: "arrow.right.circle")
+                            Text("Usar Atajos del Dispositivo")
+                                .fontWeight(.semibold)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(12)
+                        .background(Color(.systemGray6))
+                        .foregroundColor(.primary)
+                        .cornerRadius(12)
+                    }
+                    
+                    // Error message
+                    if let error = authManager.error {
+                        Text(error)
+                            .font(.caption2)
+                            .foregroundColor(.red)
+                            .multilineTextAlignment(.center)
+                            .padding(12)
+                            .background(Color.red.opacity(0.1))
+                            .cornerRadius(8)
+                    }
+                }
+                .padding(16)
             }
         }
-    }
-}
 
 /// Fila de permiso individual.
 struct PermissionRow: View {

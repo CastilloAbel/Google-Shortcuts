@@ -24,8 +24,14 @@ struct GoogleShortcutsApp: App {
     /// - `com.googleusercontent.apps.CLIENT_ID://` → OAuth callback
     /// - `googleshortcuts://` → Deep links desde Shortcuts
     private func handleIncomingURL(_ url: URL) {
+        print("[OAuth] URL recibida: \(url)")
+        print("[OAuth] Scheme: \(url.scheme ?? "nil")")
+        print("[OAuth] Host: \(url.host ?? "nil")")
+        print("[OAuth] Path: \(url.path)")
+        
         // OAuth2 callback de Google
         if url.scheme?.starts(with: "com.googleusercontent.apps") == true {
+            print("[OAuth] ✅ Reconocida como callback de Google")
             Task {
                 await authManager.handleOAuthCallback(url: url)
             }
@@ -34,8 +40,12 @@ struct GoogleShortcutsApp: App {
         
         // Deep links propios (googleshortcuts://)
         if url.scheme == "googleshortcuts" {
+            print("[OAuth] ✅ Reconocida como deep link propio")
             handleDeepLink(url)
+            return
         }
+        
+        print("[OAuth] ❌ URL no reconocida")
     }
     
     private func handleDeepLink(_ url: URL) {
