@@ -26,7 +26,7 @@ enum OAuthConfig {
     static var redirectURI: String {
         let reversed = clientID
             .replacingOccurrences(of: ".apps.googleusercontent.com", with: "")
-        return "com.googleusercontent.apps.\(reversed)://oauthredirect"
+        return "com.googleusercontent.apps.\(reversed):/oauthredirect"
     }
     
     // MARK: - OAuth2 Endpoints
