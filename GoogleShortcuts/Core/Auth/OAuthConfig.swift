@@ -72,7 +72,7 @@ enum OAuthConfig {
     // MARK: - Keychain & Storage
     
     /// Prefijo para almacenar tokens en Keychain.
-    static let keychainService = "com.personal.googleshortcuts.oauth"
+    static let keychainService = "com.abel.googleshortcuts.oauth"
     
     /// Clave para el access token.
     static let accessTokenKey = "access_token"
@@ -84,5 +84,5 @@ enum OAuthConfig {
     static let expirationKey = "token_expiration"
     
     /// App Group para compartir datos con extensiones (App Intents).
-    static let appGroupID = "group.com.personal.googleshortcuts"
+    static let appGroupID = "group.com.abel.googleshortcuts"
 }
