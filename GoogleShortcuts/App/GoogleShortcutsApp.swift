@@ -15,7 +15,6 @@ struct GoogleShortcutsApp: App {
                     handleIncomingURL(url)
                 }
         }
-        .windowStyle(.default)
     }
     
     /// Procesa URLs entrantes (OAuth callback y deep links de Shortcuts).
