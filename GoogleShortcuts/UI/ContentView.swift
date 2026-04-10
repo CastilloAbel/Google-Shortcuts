@@ -13,43 +13,42 @@ struct ContentView: View {
     @State private var selectedTab: Int = 0
     
     var body: some View {
-        ZStack {
-            // Fondo responsive al tema - ocupa todo el espacio
-            Color(.systemBackground)
-                .ignoresSafeArea()
-            
-            TabView(selection: $selectedTab) {
-                // MARK: - Tab 1: Gmail
-                Group {
-                    if authManager.isAuthenticated {
-                        GmailTabView()
-                    } else {
-                        AuthView()
-                    }
+        TabView(selection: $selectedTab) {
+            // MARK: - Tab 1: Gmail
+            Group {
+                if authManager.isAuthenticated {
+                    GmailTabView()
+                } else {
+                    AuthView()
                 }
-                .tag(0)
-                .tabItem {
-                    Label("Gmail", systemImage: "envelope.fill")
-                }
-                
-                // MARK: - Tab 2: Device Actions
-                DeviceActionsView()
-                    .tag(1)
-                    .tabItem {
-                        Label("Dispositivo", systemImage: "iphone")
-                    }
-                
-                // MARK: - Tab 3: Portapapeles
-                ClipboardView()
-                    .tag(2)
-                    .tabItem {
-                        Label("Portapapeles", systemImage: "doc.on.clipboard")
-                    }
             }
-            .glassEffect()  // Aplicar efecto glass a transiciones
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color(.systemBackground))
+            .tag(0)
+            .tabItem {
+                Label("Gmail", systemImage: "envelope.fill")
+            }
+            
+            // MARK: - Tab 2: Device Actions
+            DeviceActionsView()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color(.systemBackground))
+                .tag(1)
+                .tabItem {
+                    Label("Dispositivo", systemImage: "iphone")
+                }
+            
+            // MARK: - Tab 3: Portapapeles
+            ClipboardView()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color(.systemBackground))
+                .tag(2)
+                .tabItem {
+                    Label("Portapapeles", systemImage: "doc.on.clipboard")
+                }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .ignoresSafeArea(.keyboard)  // Solo ignorar keyboard
+        .ignoresSafeArea(.all)
         .animation(.easeInOut, value: authManager.isAuthenticated)
     }
 }

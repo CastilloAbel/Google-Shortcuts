@@ -62,6 +62,7 @@ struct ClipboardView: View {
                     .listStyle(.plain)
                 }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
         .confirmationDialog(
             "¿Limpiar histórico?",
