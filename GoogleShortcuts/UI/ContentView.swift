@@ -13,41 +13,34 @@ struct ContentView: View {
     @State private var selectedTab: Int = 0
     
     var body: some View {
-        ZStack {
-            // Fondo oscuro para ver la escala
-            Color.black.ignoresSafeArea()
-            
-            TabView(selection: $selectedTab) {
-                // MARK: - Tab 1: Gmail
-                Group {
-                    if authManager.isAuthenticated {
-                        GmailTabView()
-                    } else {
-                        AuthView()
-                    }
+        TabView(selection: $selectedTab) {
+            // MARK: - Tab 1: Gmail
+            Group {
+                if authManager.isAuthenticated {
+                    GmailTabView()
+                } else {
+                    AuthView()
                 }
-                .tag(0)
-                .tabItem {
-                    Label("Gmail", systemImage: "envelope.fill")
-                }
-                
-                // MARK: - Tab 2: Device Actions
-                DeviceActionsView()
-                    .tag(1)
-                    .tabItem {
-                        Label("Dispositivo", systemImage: "iphone")
-                    }
-                
-                // MARK: - Tab 3: Portapapeles
-                ClipboardView()
-                    .tag(2)
-                    .tabItem {
-                        Label("Portapapeles", systemImage: "doc.on.clipboard")
-                    }
             }
-            .ignoresSafeArea()
+            .tag(0)
+            .tabItem {
+                Label("Gmail", systemImage: "envelope.fill")
+            }
+            
+            // MARK: - Tab 2: Device Actions
+            DeviceActionsView()
+                .tag(1)
+                .tabItem {
+                    Label("Dispositivo", systemImage: "iphone")
+                }
+            
+            // MARK: - Tab 3: Portapapeles
+            ClipboardView()
+                .tag(2)
+                .tabItem {
+                    Label("Portapapeles", systemImage: "doc.on.clipboard")
+                }
         }
-        .ignoresSafeArea()
         .animation(.easeInOut, value: authManager.isAuthenticated)
     }
 }

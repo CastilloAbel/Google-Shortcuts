@@ -12,10 +12,10 @@ struct GoogleShortcutsApp: App {
             ContentView()
                 .environmentObject(authManager)
                 .onOpenURL { url in
-                    // Maneja el callback de OAuth2 desde el navegador
                     handleIncomingURL(url)
                 }
         }
+        .windowStyle(.default)
     }
     
     /// Procesa URLs entrantes (OAuth callback y deep links de Shortcuts).

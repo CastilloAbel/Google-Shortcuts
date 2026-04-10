@@ -6,13 +6,9 @@ struct ClipboardView: View {
     @State private var showConfirmClear = false
     
     var body: some View {
-        ZStack {
-            Color(.systemBackground)
-                .ignoresSafeArea()
-            
-            VStack(spacing: 0) {
-                // MARK: - Header
-                HStack {
+        VStack(spacing: 0) {
+            // MARK: - Header
+            HStack {
                     Text("Portapapeles")
                         .font(.title2)
                         .fontWeight(.bold)
@@ -61,8 +57,6 @@ struct ClipboardView: View {
                     }
                     .listStyle(.plain)
                 }
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
         .confirmationDialog(
             "¿Limpiar histórico?",
