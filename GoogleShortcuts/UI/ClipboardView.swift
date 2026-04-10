@@ -6,78 +6,76 @@ struct ClipboardView: View {
     @State private var showConfirmClear = false
     
     var body: some View {
-        NavigationStack {
-            ZStack {
-                Color(.systemBackground)
-                    .ignoresSafeArea()
+        ZStack {
+            Color(.systemBackground)
+                .ignoresSafeArea()
+            
+            VStack(spacing: 0) {
+                // MARK: - Header
+                HStack {
+                    Text("Portapapeles")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                    
+                    Spacer()
+                    
+                    // Botón limpiar histórico
+                    if !clipboardService.history.isEmpty {
+                        Button(action: { showConfirmClear = true }) {
+                            Image(systemName: "trash")
+                                .foregroundColor(.red)
+                        }
+                    }
+                }
+                .padding()
                 
-                VStack(spacing: 0) {
-                    // MARK: - Header
-                    HStack {
-                        Text("Portapapeles")
-                            .font(.title2)
-                            .fontWeight(.bold)
+                Divider()
+                
+                // MARK: - Content
+                if clipboardService.history.isEmpty {
+                    VStack(spacing: 16) {
+                        Image(systemName: "doc.on.clipboard")
+                            .font(.system(size: 48))
+                            .foregroundColor(.gray)
                         
-                        Spacer()
+                        Text("Portapapeles vacío")
+                            .font(.headline)
+                            .foregroundColor(.secondary)
                         
-                        // Botón limpiar histórico
-                        if !clipboardService.history.isEmpty {
-                            Button(action: { showConfirmClear = true }) {
-                                Image(systemName: "trash")
-                                    .foregroundColor(.red)
-                            }
-                        }
+                        Text("Los elementos que copies aparecerán aquí")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
                     }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .padding()
-                    
-                    Divider()
-                    
-                    // MARK: - Content
-                    if clipboardService.history.isEmpty {
-                        VStack(spacing: 16) {
-                            Image(systemName: "doc.on.clipboard")
-                                .font(.system(size: 48))
-                                .foregroundColor(.gray)
-                            
-                            Text("Portapapeles vacío")
-                                .font(.headline)
-                                .foregroundColor(.secondary)
-                            
-                            Text("Los elementos que copies aparecerán aquí")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                                .multilineTextAlignment(.center)
-                        }
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .padding()
-                    } else {
-                        List {
-                            ForEach(clipboardService.history) { item in
-                                ClipboardItemRow(item: item) {
-                                    clipboardService.copyToClipboard(item)
-                                } onDelete: {
-                                    clipboardService.removeItem(item)
-                                }
+                } else {
+                    List {
+                        ForEach(clipboardService.history) { item in
+                            ClipboardItemRow(item: item) {
+                                clipboardService.copyToClipboard(item)
+                            } onDelete: {
+                                clipboardService.removeItem(item)
                             }
                         }
-                        .listStyle(.plain)
                     }
+                    .listStyle(.plain)
                 }
             }
-            .navigationBarTitleDisplayMode(.inline)
-            .confirmationDialog(
-                "¿Limpiar histórico?",
-                isPresented: $showConfirmClear,
-                actions: {
-                    Button("Limpiar", role: .destructive) {
-                        clipboardService.clearHistory()
-                    }
-                    Button("Cancelar", role: .cancel) {}
-                },
-                message: {
-                    Text("Se eliminarán todos los elementos del histórico del portapapeles.")
+        }
+        .confirmationDialog(
+            "¿Limpiar histórico?",
+            isPresented: $showConfirmClear,
+            actions: {
+                Button("Limpiar", role: .destructive) {
+                    clipboardService.clearHistory()
                 }
-            )
+                Button("Cancelar", role: .cancel) {}
+            },
+            message: {
+                Text("Se eliminarán todos los elementos del histórico del portapapeles.")
+            }
+        )
         }
     }
 }

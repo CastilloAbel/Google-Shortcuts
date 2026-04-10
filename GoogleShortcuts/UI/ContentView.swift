@@ -14,7 +14,7 @@ struct ContentView: View {
     
     var body: some View {
         ZStack {
-            // Fondo responsive al tema
+            // Fondo responsive al tema - ocupa todo el espacio
             Color(.systemBackground)
                 .ignoresSafeArea()
             
@@ -48,6 +48,8 @@ struct ContentView: View {
             }
             .glassEffect()  // Aplicar efecto glass a transiciones
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .ignoresSafeArea(.keyboard)  // Solo ignorar keyboard
         .animation(.easeInOut, value: authManager.isAuthenticated)
     }
 }
