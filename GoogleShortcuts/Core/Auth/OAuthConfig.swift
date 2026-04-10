@@ -18,16 +18,15 @@ enum OAuthConfig {
     static let clientID = "25887787070-g1q6h2806850edpgllg3eboeot43e79p.apps.googleusercontent.com"
     
     /// Redirect URI para Google OAuth2 en iOS.
-    /// Formato estándar: scheme:/oauthredirect (UN SOLO SLASH, sin //)
+    /// Formato estándar: scheme://oauthredirect
     /// 
-    /// IMPORTANTE: Este DEBE estar registrado en Google Cloud Console EXACTAMENTE igual.
-    /// El valor se URL-encoda cuando se envía como parámetro (el / se convierte en %2F)
+    /// IMPORTANTE: Este DEBE estar registrado en Google Cloud Console como:
+    /// "Authorized redirect URIs" o "OAuth2 credentials" > "Redirect URIs"
+    /// en EXACTAMENTE este formato (con ://oauthredirect)
     static var redirectURI: String {
         let reversed = clientID
             .replacingOccurrences(of: ".apps.googleusercontent.com", with: "")
-        let uri = "com.googleusercontent.apps.\(reversed):/oauthredirect"
-        print("[OAuth DEBUG] OAuthConfig.redirectURI: \(uri)")
-        return uri
+        return "com.googleusercontent.apps.\(reversed):/oauthredirect"
     }
     
     // MARK: - OAuth2 Endpoints
