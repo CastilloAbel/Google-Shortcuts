@@ -59,7 +59,8 @@ final class ClipboardService: NSObject, ObservableObject {
     }
     
     deinit {
-        stopMonitoring()
+        monitoringTimer?.invalidate()
+        monitoringTimer = nil
     }
     
     // MARK: - Monitoring
@@ -68,17 +69,13 @@ final class ClipboardService: NSObject, ObservableObject {
     private func startMonitoring() {
         // Chequear cada 0.5 segundos
         monitoringTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
-            self?.checkClipboard()
+            Task { @MainActor in
+                self?.checkClipboard()
+            }
         }
     }
     
-    /// Detiene el monitoreo
-    private func stopMonitoring() {
-        monitoringTimer?.invalidate()
-        monitoringTimer = nil
-    }
-    
-    /// Verifica si hay cambios en el portapapeles
+    /// Verifica si hay cambios en el portapapeles (debe ser llamado en MainActor)
     private func checkClipboard() {
         let pasteboard = UIPasteboard.general
         
@@ -141,7 +138,8 @@ final class ClipboardService: NSObject, ObservableObject {
     /// Guarda el histórico en UserDefaults
     private func saveHistory() {
         do {
-            let data = try JSONEncoder().encode(history.prefix(maxHistoryItems))
+            let dataToSave = Array(history.prefix(maxHistoryItems))
+            let data = try JSONEncoder().encode(dataToSave)
             UserDefaults.standard.set(data, forKey: userDefaultsKey)
         } catch {
             print("[Clipboard] Error guardando histórico: \(error)")
