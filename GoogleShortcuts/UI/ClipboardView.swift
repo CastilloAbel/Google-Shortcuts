@@ -76,7 +76,6 @@ struct ClipboardView: View {
                 Text("Se eliminarán todos los elementos del histórico del portapapeles.")
             }
         )
-        }
     }
 }
 
