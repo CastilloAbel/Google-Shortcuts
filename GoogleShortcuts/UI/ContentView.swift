@@ -5,6 +5,7 @@ import SwiftUI
 /// Muestra un TabView con:
 /// - Tab 1: Gmail (requiere autenticación con Google)
 /// - Tab 2: Device Actions (sin autenticación)
+/// - Tab 3: Portapapeles (histórico de items copiados)
 struct ContentView: View {
     
     @EnvironmentObject var authManager: OAuthManager
@@ -36,6 +37,13 @@ struct ContentView: View {
                     .tag(1)
                     .tabItem {
                         Label("Dispositivo", systemImage: "iphone")
+                    }
+                
+                // MARK: - Tab 3: Portapapeles
+                ClipboardView()
+                    .tag(2)
+                    .tabItem {
+                        Label("Portapapeles", systemImage: "doc.on.clipboard")
                     }
             }
             .glassEffect()  // Aplicar efecto glass a transiciones
@@ -81,17 +89,39 @@ struct SendEmailView: View {
         NavigationStack {
             Form {
                 Section("Destinatario") {
-                    TextField("correo@ejemplo.com", text: $to)
-                        .keyboardType(.emailAddress)
-                        .textContentType(.emailAddress)
-                        .autocapitalization(.none)
+                    HStack {
+                        TextField("correo@ejemplo.com", text: $to)
+                            .keyboardType(.emailAddress)
+                            .textContentType(.emailAddress)
+                            .autocapitalization(.none)
+                        
+                        ClipboardButton { item in
+                            to = item.content
+                        }
+                    }
                 }
                 
                 Section("Mensaje") {
-                    TextField("Asunto", text: $subjectText)
+                    HStack {
+                        TextField("Asunto", text: $subjectText)
+                        
+                        ClipboardButton { item in
+                            subjectText = item.content
+                        }
+                    }
                     
-                    TextEditor(text: $bodyText)
-                        .frame(minHeight: 150)
+                    HStack(alignment: .top) {
+                        TextEditor(text: $bodyText)
+                            .frame(minHeight: 150)
+                        
+                        VStack(spacing: 16) {
+                            ClipboardButton { item in
+                                bodyText = item.content
+                            }
+                            
+                            Spacer()
+                        }
+                    }
                 }
                 
                 Section {

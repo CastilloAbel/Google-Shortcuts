@@ -21,13 +21,10 @@ enum OAuthConfig {
     /// Formato estándar: scheme:/oauthredirect (UN SOLO SLASH, sin //)
     /// 
     /// IMPORTANTE: Este DEBE estar registrado en Google Cloud Console EXACTAMENTE igual.
-    /// El valor se URL-encoda cuando se envía como parámetro (el / se convierte en %2F)
     static var redirectURI: String {
         let reversed = clientID
             .replacingOccurrences(of: ".apps.googleusercontent.com", with: "")
-        let uri = "com.googleusercontent.apps.\(reversed):/oauthredirect"
-        print("[OAuth DEBUG] OAuthConfig.redirectURI: \(uri)")
-        return uri
+        return "com.googleusercontent.apps.\(reversed):/oauthredirect"
     }
     
     // MARK: - OAuth2 Endpoints
