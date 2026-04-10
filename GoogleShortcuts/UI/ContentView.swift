@@ -22,8 +22,6 @@ struct ContentView: View {
                     AuthView()
                 }
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color(.systemBackground))
             .tag(0)
             .tabItem {
                 Label("Gmail", systemImage: "envelope.fill")
@@ -31,8 +29,6 @@ struct ContentView: View {
             
             // MARK: - Tab 2: Device Actions
             DeviceActionsView()
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color(.systemBackground))
                 .tag(1)
                 .tabItem {
                     Label("Dispositivo", systemImage: "iphone")
@@ -40,15 +36,11 @@ struct ContentView: View {
             
             // MARK: - Tab 3: Portapapeles
             ClipboardView()
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color(.systemBackground))
                 .tag(2)
                 .tabItem {
                     Label("Portapapeles", systemImage: "doc.on.clipboard")
                 }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .ignoresSafeArea(.container, edges: .bottom)
         .animation(.easeInOut, value: authManager.isAuthenticated)
     }
 }
