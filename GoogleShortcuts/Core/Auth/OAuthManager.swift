@@ -95,6 +95,34 @@ class OAuthManager: ObservableObject {
             return
         }
         
+        // DEBUG: Logs detallados del redirect_uri
+        print("\n[OAuth DEBUG] === AUTHORIZATION URL DETAILS ===")
+        print("[OAuth DEBUG] Full URL: \(url.absoluteString)")
+        
+        // Extraer el redirect_uri de la query string
+        if let queryString = url.query {
+            print("[OAuth DEBUG] Query string: \(queryString)")
+            
+            // Buscar redirect_uri en la query
+            if let range = queryString.range(of: "redirect_uri=") {
+                let afterPrefix = String(queryString[range.upperBound...])
+                
+                // Extraer hasta el siguiente & o fin
+                var redirectUriEncoded = afterPrefix
+                if let ampIndex = afterPrefix.firstIndex(of: "&") {
+                    redirectUriEncoded = String(afterPrefix[..<ampIndex])
+                }
+                
+                print("[OAuth DEBUG] redirect_uri (URL encoded): \(redirectUriEncoded)")
+                if let decoded = redirectUriEncoded.removingPercentEncoding {
+                    print("[OAuth DEBUG] redirect_uri (decoded): \(decoded)")
+                }
+            }
+        }
+        
+        print("[OAuth DEBUG] client_id: \(OAuthConfig.clientID)")
+        print("[OAuth DEBUG] === END DEBUG ===\n")
+        
         // 3. Abrir en el navegador del sistema
         // Usamos UIApplication.shared.open porque ASWebAuthenticationSession
         // requiere un presentationContextProvider que puede dar problemas con sideloading.
