@@ -48,7 +48,7 @@ struct ContentView: View {
                 }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .ignoresSafeArea(.all)
+        .ignoresSafeArea(.container, edges: .bottom)
         .animation(.easeInOut, value: authManager.isAuthenticated)
     }
 }
