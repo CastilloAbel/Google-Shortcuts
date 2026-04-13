@@ -22,6 +22,7 @@ settings:
     CODE_SIGN_ENTITLEMENTS: ""
     DEVELOPMENT_TEAM: ""
     PROVISIONING_PROFILE_SPECIFIER: ""
+    TARGETED_DEVICE_FAMILY: "1"
 
 targets:
   GoogleShortcuts:

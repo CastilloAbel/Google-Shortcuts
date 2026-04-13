@@ -46,6 +46,7 @@ workflows:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
             DEVELOPMENT_TEAM="" \
+            TARGETED_DEVICE_FAMILY: "1" \
             PROVISIONING_PROFILE_SPECIFIER="" \
             -skipPackagePluginValidation \
             -skipMacroValidation \
