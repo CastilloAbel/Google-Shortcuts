@@ -25,7 +25,7 @@ enum OAuthConfig {
         let reversed = clientID
             .replacingOccurrences(of: ".apps.googleusercontent.com", with: "")
         // return "com.googleusercontent.apps.\(reversed):/oauthredirect"
-        return "com.googleusercontent.apps.25887787070-g1q6h2806850edpgllg3eboeot43e79p"
+        return "com.googleusercontent.apps.25887787070-g1q6h2806850edpgllg3eboeot43e79p:/oauthredirect"
     }
     
     // MARK: - OAuth2 Endpoints
@@ -83,5 +83,5 @@ enum OAuthConfig {
     static let expirationKey = "token_expiration"
     
     /// App Group para compartir datos con extensiones (App Intents).
-    static let appGroupID = "group.com.personal.googleshortcuts"
+    static let appGroupID = "group.com.abel.googleshortcuts"
 }
