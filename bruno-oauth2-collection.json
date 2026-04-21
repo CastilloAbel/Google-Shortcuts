@@ -1,0 +1,136 @@
+{
+  "type": "collection",
+  "name": "Google OAuth2 Gmail API",
+  "version": "1.0.0",
+  "target": "https://accounts.google.com",
+  "items": [
+    {
+      "name": "Step 1 - Get Authorization Code",
+      "request": {
+        "method": "GET",
+        "url": "https://accounts.google.com/o/oauth2/v2/auth?client_id=25887787070-g1q6h2806850edpgllg3eboeot43e79p.apps.googleusercontent.com&redirect_uri=com.googleusercontent.apps.25887787070-g1q6h2806850edpgllg3eboeot43e79p:/oauthredirect&response_type=code&scope=email%20profile%20https://www.googleapis.com/auth/gmail.send%20https://www.googleapis.com/auth/gmail.readonly&code_challenge={{code_challenge}}&code_challenge_method=S256&state=security_token",
+        "headers": {}
+      }
+    },
+    {
+      "name": "Step 2 - Exchange Code for Token",
+      "request": {
+        "method": "POST",
+        "url": "https://oauth2.googleapis.com/token",
+        "headers": {
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        "body": {
+          "mode": "form-urlencoded",
+          "fields": [
+            {
+              "name": "code",
+              "value": "{{auth_code}}",
+              "description": "Authorization code from Step 1"
+            },
+            {
+              "name": "client_id",
+              "value": "25887787070-g1q6h2806850edpgllg3eboeot43e79p.apps.googleusercontent.com"
+            },
+            {
+              "name": "redirect_uri",
+              "value": "com.googleusercontent.apps.25887787070-g1q6h2806850edpgllg3eboeot43e79p:/oauthredirect"
+            },
+            {
+              "name": "grant_type",
+              "value": "authorization_code"
+            },
+            {
+              "name": "code_verifier",
+              "value": "{{code_verifier}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Step 3 - Get Gmail Profile (Test Token)",
+      "request": {
+        "method": "GET",
+        "url": "https://gmail.googleapis.com/gmail/v1/users/me/profile",
+        "headers": {
+          "Authorization": "Bearer {{access_token}}"
+        }
+      }
+    },
+    {
+      "name": "Step 4 - List Gmail Messages",
+      "request": {
+        "method": "GET",
+        "url": "https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=10",
+        "headers": {
+          "Authorization": "Bearer {{access_token}}"
+        }
+      }
+    },
+    {
+      "name": "Step 5 - Get Message Details",
+      "request": {
+        "method": "GET",
+        "url": "https://gmail.googleapis.com/gmail/v1/users/me/messages/{{message_id}}?format=full",
+        "headers": {
+          "Authorization": "Bearer {{access_token}}"
+        },
+        "description": "Get id from Step 4 response, replace {{message_id}}"
+      }
+    },
+    {
+      "name": "Step 6 - Refresh Access Token",
+      "request": {
+        "method": "POST",
+        "url": "https://oauth2.googleapis.com/token",
+        "headers": {
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        "body": {
+          "mode": "form-urlencoded",
+          "fields": [
+            {
+              "name": "client_id",
+              "value": "25887787070-g1q6h2806850edpgllg3eboeot43e79p.apps.googleusercontent.com"
+            },
+            {
+              "name": "grant_type",
+              "value": "refresh_token"
+            },
+            {
+              "name": "refresh_token",
+              "value": "{{refresh_token}}"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "variables": {
+    "code_verifier": {
+      "description": "Run: python3 generate_pkce.py",
+      "value": ""
+    },
+    "code_challenge": {
+      "description": "Run: python3 generate_pkce.py",
+      "value": ""
+    },
+    "auth_code": {
+      "description": "From Step 1 redirect URL, extract 'code' parameter",
+      "value": ""
+    },
+    "access_token": {
+      "description": "From Step 2 response token",
+      "value": ""
+    },
+    "refresh_token": {
+      "description": "From Step 2 response (long-lived token)",
+      "value": ""
+    },
+    "message_id": {
+      "description": "From Step 4 response, messages[0].id",
+      "value": ""
+    }
+  }
+}
