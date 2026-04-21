@@ -21,13 +21,14 @@ enum OAuthConfig {
     /// Formato estándar: scheme:/oauthredirect (UN SOLO SLASH, sin //)
     /// 
     /// IMPORTANTE: Este DEBE estar registrado en Google Cloud Console EXACTAMENTE igual.
-    static var redirectURI: String {
-        let reversed = clientID
-            .replacingOccurrences(of: ".apps.googleusercontent.com", with: "")
-        // return "com.googleusercontent.apps.\(reversed):/oauthredirect"
-        return "com.googleusercontent.apps.25887787070-g1q6h2806850edpgllg3eboeot43e79p:/oauth2redirect"
-    }
-    
+    // static var redirectURI: String {
+    //     let reversed = clientID
+    //         .replacingOccurrences(of: ".apps.googleusercontent.com", with: "")
+    //     // return "com.googleusercontent.apps.\(reversed):/oauthredirect"
+    //     return "com.googleusercontent.apps.25887787070-g1q6h2806850edpgllg3eboeot43e79p:/oauth2redirect"
+    // }
+    static var redirectURI = "com.googleusercontent.apps.25887787070-g1q6h2806850edpgllg3eboeot43e79p:/oauth2redirect"
+
     // MARK: - OAuth2 Endpoints
     
     /// Authorization endpoint de Google.
