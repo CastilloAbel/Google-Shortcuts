@@ -80,18 +80,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
         // Registrar background task handler
-        do {
-            try BGTaskScheduler.shared.register(
-                forTaskWithIdentifier: "com.abel.googleshortcuts.clipboard.monitoring",
-                using: nil
-            ) { task in
-                if let processingTask = task as? BGProcessingTask {
-                    // Procesar background task
-                    processingTask.setTaskCompleted(success: true)
-                }
+        BGTaskScheduler.shared.register(
+            forTaskWithIdentifier: "com.abel.googleshortcuts.clipboard.monitoring",
+            using: nil
+        ) { task in
+            if let processingTask = task as? BGProcessingTask {
+                // Procesar background task
+                processingTask.setTaskCompleted(success: true)
             }
-        } catch {
-            print("❌ Error registrando background task: \(error.localizedDescription)")
         }
         
         return true

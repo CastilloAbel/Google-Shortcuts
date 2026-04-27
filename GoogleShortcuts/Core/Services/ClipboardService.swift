@@ -61,6 +61,7 @@ final class ClipboardService: NSObject, ObservableObject {
     
     deinit {
         stopMonitoring()
+        NotificationCenter.default.removeObserver(self)
     }
     
     // MARK: - Monitoring Setup
@@ -124,24 +125,20 @@ final class ClipboardService: NSObject, ObservableObject {
     
     /// Verifica si hay cambios en el portapapeles (debe ser llamado en MainActor)
     private func checkClipboard() {
-        do {
-            let pasteboard = UIPasteboard.general
+        let pasteboard = UIPasteboard.general
+        
+        // Si el changeCount cambió, hay contenido nuevo
+        if pasteboard.changeCount != lastPasteboardChangeCount {
+            lastPasteboardChangeCount = pasteboard.changeCount
             
-            // Si el changeCount cambió, hay contenido nuevo
-            if pasteboard.changeCount != lastPasteboardChangeCount {
-                lastPasteboardChangeCount = pasteboard.changeCount
-                
-                // Prioridad: URL > Imagen > Texto
-                if let url = pasteboard.url {
-                    addToHistory(url.absoluteString, type: .url)
-                } else if pasteboard.image != nil {
-                    addToHistory("[Imagen copiada]", type: .image)
-                } else if let text = pasteboard.string {
-                    addToHistory(text, type: .text)
-                }
+            // Prioridad: URL > Imagen > Texto
+            if let url = pasteboard.url {
+                addToHistory(url.absoluteString, type: .url)
+            } else if pasteboard.image != nil {
+                addToHistory("[Imagen copiada]", type: .image)
+            } else if let text = pasteboard.string {
+                addToHistory(text, type: .text)
             }
-        } catch {
-            print("⚠️ Error accediendo al portapapeles: \(error.localizedDescription)")
         }
     }
     
@@ -174,18 +171,14 @@ final class ClipboardService: NSObject, ObservableObject {
             // Copiar al portapapeles
             UIPasteboard.general.string = item.content
             currentContent = item.content
-            
-            // Actualizar changeCount para evitar que el monitoreo lo detecte como cambio nuevo
-            lastPasteboardChangeCount = UIPasteboard.general.changeCount
-            
-            print("✅ Copiado al portapapeles: \(item.content.prefix(30))...")
-        } catch {
-            print("❌ Error copiando al portapapeles: \(error.localizedDescription)")
-        }
-    }
-    
-    /// Limpia el histórico completo
-    public func clearHistory() {
+        // Copiar al portapapeles
+        UIPasteboard.general.string = item.content
+        currentContent = item.content
+        
+        // Actualizar changeCount para evitar que el monitoreo lo detecte como cambio nuevo
+        lastPasteboardChangeCount = UIPasteboard.general.changeCount
+        
+        print("✅ Copiado al portapapeles: \(item.content.prefix(30))...")c func clearHistory() {
         history.removeAll()
         saveHistory()
         print("🗑️ Histórico de portapapeles limpiado")
