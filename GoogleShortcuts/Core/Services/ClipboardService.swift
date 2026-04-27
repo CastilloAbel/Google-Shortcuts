@@ -167,10 +167,6 @@ final class ClipboardService: NSObject, ObservableObject {
     
     /// Copia un item del histórico al portapapeles (sin crear duplicado)
     public func copyToClipboard(_ item: ClipboardItem) {
-        do {
-            // Copiar al portapapeles
-            UIPasteboard.general.string = item.content
-            currentContent = item.content
         // Copiar al portapapeles
         UIPasteboard.general.string = item.content
         currentContent = item.content
@@ -178,7 +174,11 @@ final class ClipboardService: NSObject, ObservableObject {
         // Actualizar changeCount para evitar que el monitoreo lo detecte como cambio nuevo
         lastPasteboardChangeCount = UIPasteboard.general.changeCount
         
-        print("✅ Copiado al portapapeles: \(item.content.prefix(30))...")c func clearHistory() {
+        print("✅ Copiado al portapapeles: \(item.content.prefix(30))...")
+    }
+    
+    /// Limpia el histórico completo
+    public func clearHistory() {
         history.removeAll()
         saveHistory()
         print("🗑️ Histórico de portapapeles limpiado")

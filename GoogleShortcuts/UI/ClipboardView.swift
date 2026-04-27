@@ -2,61 +2,65 @@ import SwiftUI
 
 /// Vista que muestra el histórico del portapapeles
 struct ClipboardView: View {
-    @StateObject private var clipboardService = ClipboardService.shared
+    @ObservedObject var clipboardService = ClipboardService.shared
     @State private var showConfirmClear = false
     
     var body: some View {
         VStack(spacing: 0) {
             // MARK: - Header
             HStack {
-                    Text("Portapapeles")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                    
-                    Spacer()
-                    
-                    // Botón limpiar histórico
-                    if !clipboardService.history.isEmpty {
-                        Button(action: { showConfirmClear = true }) {
-                            Image(systemName: "trash")
-                                .foregroundColor(.red)
-                        }
+                Text("Portapapeles")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                
+                Spacer()
+                
+                // Botón limpiar histórico
+                if !clipboardService.history.isEmpty {
+                    Button(action: { showConfirmClear = true }) {
+                        Image(systemName: "trash")
+                            .foregroundColor(.red)
                     }
                 }
+            }
+            .padding()
+            
+            Divider()
+            
+            // MARK: - Content
+            if clipboardService.history.isEmpty {
+                VStack(spacing: 16) {
+                    Image(systemName: "doc.on.clipboard")
+                        .font(.system(size: 48))
+                        .foregroundColor(.gray)
+                    
+                    Text("Portapapeles vacío")
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+                    
+                    Text("Los elementos que copies aparecerán aquí")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding()
-                
-                Divider()
-                
-                // MARK: - Content
-                if clipboardService.history.isEmpty {
-                    VStack(spacing: 16) {
-                        Image(systemName: "doc.on.clipboard")
-                            .font(.system(size: 48))
-                            .foregroundColor(.gray)
-                        
-                        Text("Portapapeles vacío")
-                            .font(.headline)
-                            .foregroundColor(.secondary)
-                        
-                        Text("Los elementos que copies aparecerán aquí")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .padding()
-                } else {
-                    List {
-                        ForEach(clipboardService.history) { item in
-                            ClipboardItemRow(item: item) {
+            } else {
+                List {
+                    ForEach(clipboardService.history) { item in
+                        ClipboardItemRow(
+                            item: item,
+                            onCopy: {
                                 clipboardService.copyToClipboard(item)
-                            } onDelete: {
+                            },
+                            onDelete: {
                                 clipboardService.removeItem(item)
                             }
-                        }
+                        )
                     }
-                    .listStyle(.plain)
                 }
+                .listStyle(.plain)
+            }
         }
         .confirmationDialog(
             "¿Limpiar histórico?",
