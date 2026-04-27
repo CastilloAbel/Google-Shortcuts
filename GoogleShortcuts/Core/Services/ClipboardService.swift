@@ -41,7 +41,6 @@ public struct ClipboardItem: Identifiable, Codable, Hashable, Sendable {
 
 /// Servicio centralizado para gestionar el portapapeles
 /// Solo monitorea mientras la app está en foreground
-@MainActor
 final class ClipboardService: NSObject, ObservableObject {
     static let shared = ClipboardService()
     
@@ -50,7 +49,7 @@ final class ClipboardService: NSObject, ObservableObject {
     
     private var lastPasteboardChangeCount: Int = 0
     private var monitoringTimer: Timer?
-    private let maxHistoryItems = 50  // Guardamos últimos 50 items
+    private let maxHistoryItems = 50
     private let userDefaultsKey = "clipboard_history"
     
     private override init() {
@@ -60,7 +59,8 @@ final class ClipboardService: NSObject, ObservableObject {
     }
     
     deinit {
-        stopMonitoring()
+        monitoringTimer?.invalidate()
+        monitoringTimer = nil
         NotificationCenter.default.removeObserver(self)
     }
     
@@ -84,19 +84,25 @@ final class ClipboardService: NSObject, ObservableObject {
         )
         
         // Iniciar si ya está en foreground
-        if UIApplication.shared.applicationState == .active {
-            startMonitoring()
+        DispatchQueue.main.async {
+            if UIApplication.shared.applicationState == .active {
+                self.startMonitoring()
+            }
         }
     }
     
     @objc private func appDidEnterForeground() {
         print("📱 App en foreground - iniciando monitoreo de clipboard")
-        startMonitoring()
+        DispatchQueue.main.async {
+            self.startMonitoring()
+        }
     }
     
     @objc private func appDidEnterBackground() {
         print("📱 App en background - deteniendo monitoreo de clipboard")
-        stopMonitoring()
+        DispatchQueue.main.async {
+            self.stopMonitoring()
+        }
     }
     
     /// Inicia el monitoreo de cambios en el portapapeles
@@ -108,9 +114,7 @@ final class ClipboardService: NSObject, ObservableObject {
         
         // Chequear cada 0.5 segundos
         monitoringTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
-            Task { @MainActor in
-                self?.checkClipboard()
-            }
+            self?.checkClipboard()
         }
         
         print("✅ Monitoreo de clipboard INICIADO")
