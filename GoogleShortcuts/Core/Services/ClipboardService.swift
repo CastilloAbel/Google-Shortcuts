@@ -127,7 +127,7 @@ final class ClipboardService: NSObject, ObservableObject {
         print("⏸️ Monitoreo de clipboard DETENIDO")
     }
     
-    /// Verifica si hay cambios en el portapapeles (debe ser llamado en MainActor)
+    /// Verifica si hay cambios en el portapapeles
     private func checkClipboard() {
         let pasteboard = UIPasteboard.general
         
@@ -148,50 +148,54 @@ final class ClipboardService: NSObject, ObservableObject {
     
     // MARK: - History Management
     
-    /// Agrega un item al histórico
+    /// Agrega un item al histórico (thread-safe)
     private func addToHistory(_ content: String, type: ClipboardItem.ContentType = .text) {
-        // No agregar duplicados consecutivos
-        if history.first?.content == content {
-            return
+        DispatchQueue.main.async {
+            // No agregar duplicados consecutivos
+            if self.history.first?.content == content {
+                return
+            }
+            
+            let item = ClipboardItem(content: content, type: type)
+            self.history.insert(item, at: 0)
+            
+            // Limitar a maxHistoryItems
+            if self.history.count > self.maxHistoryItems {
+                self.history.removeLast(self.history.count - self.maxHistoryItems)
+            }
+            
+            self.saveHistory()
+            self.currentContent = content
+            
+            print("📝 Item agregado al histórico: \(content.prefix(30))...")
         }
-        
-        let item = ClipboardItem(content: content, type: type)
-        history.insert(item, at: 0)  // Agregar al inicio
-        
-        // Limitar a maxHistoryItems
-        if history.count > maxHistoryItems {
-            history.removeLast(history.count - maxHistoryItems)
-        }
-        
-        saveHistory()
-        currentContent = content
-        
-        print("📝 Item agregado al histórico: \(content.prefix(30))...")
     }
     
-    /// Copia un item del histórico al portapapeles (sin crear duplicado)
+    /// Copia un item del histórico al portapapeles (thread-safe)
     public func copyToClipboard(_ item: ClipboardItem) {
-        // Copiar al portapapeles
-        UIPasteboard.general.string = item.content
-        currentContent = item.content
-        
-        // Actualizar changeCount para evitar que el monitoreo lo detecte como cambio nuevo
-        lastPasteboardChangeCount = UIPasteboard.general.changeCount
-        
-        print("✅ Copiado al portapapeles: \(item.content.prefix(30))...")
+        DispatchQueue.main.async {
+            UIPasteboard.general.string = item.content
+            self.currentContent = item.content
+            self.lastPasteboardChangeCount = UIPasteboard.general.changeCount
+            print("✅ Copiado al portapapeles: \(item.content.prefix(30))...")
+        }
     }
     
-    /// Limpia el histórico completo
+    /// Limpia el histórico completo (thread-safe)
     public func clearHistory() {
-        history.removeAll()
-        saveHistory()
-        print("🗑️ Histórico de portapapeles limpiado")
+        DispatchQueue.main.async {
+            self.history.removeAll()
+            self.saveHistory()
+            print("🗑️ Histórico de portapapeles limpiado")
+        }
     }
     
-    /// Elimina un item específico del histórico
+    /// Elimina un item específico del histórico (thread-safe)
     public func removeItem(_ item: ClipboardItem) {
-        history.removeAll { $0.id == item.id }
-        saveHistory()
+        DispatchQueue.main.async {
+            self.history.removeAll { $0.id == item.id }
+            self.saveHistory()
+        }
     }
     
     // MARK: - Persistence
