@@ -73,9 +73,36 @@
     </array>
     <key>UIBackgroundModes</key>
     <array>
-        <!-- Background fetch: NO requiere cuenta paga -->
+        <!-- Background fetch: sin costo -->
         <string>fetch</string>
+        <!-- Clipboard monitoring en background -->
+        <string>processing</string>
     </array>
+    
+    <!-- PERMISOS PERSISTENTES: Se solicitan una sola vez en instalación -->
+    <key>NSPasteboardUsageDescription</key>
+    <string>Necesitamos acceso al portapapeles para guardar automáticamente tus textos, imágenes y enlaces copiados.</string>
+    
+    <key>NSContactsUsageDescription</key>
+    <string>Necesitamos acceso a tus contactos para sugerir destinatarios al enviar correos.</string>
+    
+    <key>NSCalendarsUsageDescription</key>
+    <string>Necesitamos acceso a tu calendario para sincronizar eventos de correos.</string>
+    
+    <!-- Restricción de acceso al portapapeles (iOS 16.1+) -->
+    <!-- Permite que la app acceda al portapapeles sin avisos repetidos -->
+    <key>UIPasteboardAccessRestrictionLevel</key>
+    <dict>
+        <key>general</key>
+        <true/>
+        <key>search-web</key>
+        <true/>
+    </dict>
+    
+    <!-- Notificaciones para clipboard cambios en background -->
+    <key>UIRequestUserNotificationPermission</key>
+    <true/>
+    
     <key>NSAppTransportSecurity</key>
     <dict>
         <key>NSAllowsArbitraryLoads</key>

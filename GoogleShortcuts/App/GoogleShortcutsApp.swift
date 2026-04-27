@@ -6,6 +6,7 @@ import SwiftUI
 struct GoogleShortcutsApp: App {
     
     @StateObject private var authManager = OAuthManager.shared
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     
     var body: some Scene {
         WindowGroup {
@@ -13,6 +14,13 @@ struct GoogleShortcutsApp: App {
                 .environmentObject(authManager)
                 .onOpenURL { url in
                     handleIncomingURL(url)
+                }
+                .onAppear {
+                    // Solicitar permisos una sola vez en la instalación
+                    PermissionManager.shared.requestAllPermissions()
+                    
+                    // Iniciar monitoreo de portapapeles
+                    ClipboardMonitoringService.shared.startMonitoring()
                 }
         }
     }
@@ -63,3 +71,26 @@ struct GoogleShortcutsApp: App {
         }
     }
 }
+
+// MARK: - App Delegate para Background Tasks
+
+import BackgroundTasks
+
+class AppDelegate: UIResponder, UIApplicationDelegate {
+    
+    func application(
+        _ application: UIApplication,
+        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
+    ) -> Bool {
+        // Registrar background task handler
+        BGTaskScheduler.shared.register(
+            forTaskWithIdentifier: "com.abel.googleshortcuts.clipboard.monitoring",
+            using: nil
+        ) { task in
+            ClipboardMonitoringService.handleBackgroundClipboardTask(task: task as! BGProcessingTask)
+        }
+        
+        return true
+    }
+}
+

@@ -13,59 +13,128 @@ struct ContentView: View {
     @State private var selectedTab: Int = 0
     
     var body: some View {
-        TabView(selection: $selectedTab) {
-            // MARK: - Tab 1: Gmail
-            Group {
-                if authManager.isAuthenticated {
-                    GmailTabView()
-                } else {
-                    AuthView()
+        ZStack {
+            TabView(selection: $selectedTab) {
+                // MARK: - Tab 1: Gmail
+                Group {
+                    if authManager.isAuthenticated {
+                        GmailTabView()
+                    } else {
+                        AuthView()
+                    }
                 }
-            }
-            .tag(0)
-            .tabItem {
-                Label("Gmail", systemImage: "envelope.fill")
-            }
-            
-            // MARK: - Tab 2: Device Actions
-            DeviceActionsView()
-                .tag(1)
+                .tag(0)
                 .tabItem {
-                    Label("Dispositivo", systemImage: "iphone")
+                    Label("Gmail", systemImage: "envelope.fill")
                 }
-            
-            // MARK: - Tab 3: Portapapeles
-            ClipboardView()
-                .tag(2)
-                .tabItem {
-                    Label("Portapapeles", systemImage: "doc.on.clipboard")
-                }
+                
+                // MARK: - Tab 2: Device Actions
+                DeviceActionsView()
+                    .tag(1)
+                    .tabItem {
+                        Label("Dispositivo", systemImage: "iphone")
+                    }
+                
+                // MARK: - Tab 3: Portapapeles
+                ClipboardView()
+                    .tag(2)
+                    .tabItem {
+                        Label("Portapapeles", systemImage: "doc.on.clipboard")
+                    }
+            }
+            .liquidGlassTabBar()
+            .animation(.easeInOut, value: authManager.isAuthenticated)
         }
-        .animation(.easeInOut, value: authManager.isAuthenticated)
     }
 }
 
-/// Vista con contenido de Gmail (tabs de Inbox, Enviar, Ajustes).
+/// Vista con contenido de Gmail (pestañas de Inbox, Enviar, Ajustes con swipe).
 struct GmailTabView: View {
+    @State private var selectedGmailTab: GmailTab = .inbox
+    
     var body: some View {
-        TabView {
-            EmailListView()
-                .tabItem {
-                    Label("Inbox", systemImage: "envelope.fill")
+        ZStack {
+            // MARK: - Contenido con transición suave
+            Group {
+                switch selectedGmailTab {
+                case .inbox:
+                    EmailListView()
+                        .transition(.opacity)
+                
+                case .send:
+                    SendEmailView()
+                        .transition(.opacity)
+                
+                case .settings:
+                    SettingsView()
+                        .transition(.opacity)
                 }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
             
-            SendEmailView()
-                .tabItem {
-                    Label("Enviar", systemImage: "paperplane.fill")
+            // MARK: - Selector de pestañas (Segmented Picker tipo iOS Music)
+            VStack {
+                HStack(spacing: 0) {
+                    ForEach(GmailTab.allCases, id: \.self) { tab in
+                        VStack(spacing: 4) {
+                            Label(tab.label, systemImage: tab.icon)
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundColor(selectedGmailTab == tab ? .blue : .gray)
+                            
+                            if selectedGmailTab == tab {
+                                RoundedRectangle(cornerRadius: 2)
+                                    .fill(Color.blue)
+                                    .frame(height: 3)
+                                    .transition(.scale)
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                selectedGmailTab = tab
+                            }
+                        }
+                    }
                 }
-            
-            SettingsView()
-                .tabItem {
-                    Label("Ajustes", systemImage: "gear")
-                }
+                .padding(.horizontal)
+                .padding(.top, 8)
+                .padding(.bottom, 4)
+                .background(Color(.systemBackground))
+                
+                Divider()
+                
+                Spacer()
+            }
+            .frame(maxHeight: .infinity, alignment: .top)
+        }
+        .navigationTitle("Gmail")
+    }
+}
+
+// MARK: - Enum para las pestañas de Gmail
+enum GmailTab: CaseIterable, Hashable {
+    case inbox
+    case send
+    case settings
+    
+    var label: String {
+        switch self {
+        case .inbox: return "Inbox"
+        case .send: return "Enviar"
+        case .settings: return "Ajustes"
+        }
+    }
+    
+    var icon: String {
+        switch self {
+        case .inbox: return "envelope.fill"
+        case .send: return "paperplane.fill"
+        case .settings: return "gear"
         }
     }
 }
+
 
 /// Vista para enviar correos manualmente desde la app.
 struct SendEmailView: View {
