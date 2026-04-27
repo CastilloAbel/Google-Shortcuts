@@ -7,7 +7,7 @@ public struct ClipboardItem: Identifiable, Codable, Hashable, Sendable {
     public let id: UUID
     public let content: String
     public let timestamp: Date
-    public let type: ContentType  // text, url, image description
+    public let type: ContentType
     
     public enum ContentType: String, Codable, Sendable {
         case text
@@ -23,7 +23,6 @@ public struct ClipboardItem: Identifiable, Codable, Hashable, Sendable {
         self.type = type
     }
     
-    /// Formato legible del contenido (truncado si es muy largo)
     public var displayText: String {
         let maxLength = 100
         return content.count > maxLength
@@ -31,7 +30,6 @@ public struct ClipboardItem: Identifiable, Codable, Hashable, Sendable {
             : content
     }
     
-    /// Tiempo relativo desde que se copió
     public var relativeTime: String {
         let formatter = RelativeDateTimeFormatter()
         formatter.locale = Locale(identifier: "es")
@@ -40,7 +38,7 @@ public struct ClipboardItem: Identifiable, Codable, Hashable, Sendable {
 }
 
 /// Servicio centralizado para gestionar el portapapeles
-/// Solo monitorea mientras la app está en foreground
+/// Monitorea automáticamente los cambios en el portapapeles
 final class ClipboardService: NSObject, ObservableObject {
     static let shared = ClipboardService()
     
@@ -59,23 +57,18 @@ final class ClipboardService: NSObject, ObservableObject {
     }
     
     deinit {
-        monitoringTimer?.invalidate()
-        monitoringTimer = nil
+        stopMonitoring()
         NotificationCenter.default.removeObserver(self)
     }
     
     // MARK: - Monitoring Setup
     
-    /// Configura el monitoreo pero NO lo inicia
+    /// Configura y inicia el monitoreo de portapapeles
     private func setupMonitoring() {
-        // El monitoreo se inicia cuando la app entra en foreground
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(appDidEnterForeground),
-            name: UIApplication.didBecomeActiveNotification,
-            object: nil
-        )
+        // Iniciar monitoreo inmediatamente
+        startMonitoring()
         
+        // Pausar cuando la app entra en background
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(appDidEnterBackground),
@@ -83,26 +76,23 @@ final class ClipboardService: NSObject, ObservableObject {
             object: nil
         )
         
-        // Iniciar si ya está en foreground
-        DispatchQueue.main.async {
-            if UIApplication.shared.applicationState == .active {
-                self.startMonitoring()
-            }
-        }
+        // Reanudar cuando regresa a foreground
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(appDidEnterForeground),
+            name: UIApplication.didBecomeActiveNotification,
+            object: nil
+        )
     }
     
     @objc private func appDidEnterForeground() {
-        print("📱 App en foreground - iniciando monitoreo de clipboard")
-        DispatchQueue.main.async {
-            self.startMonitoring()
-        }
+        print("📱 App en foreground - reanudando monitoreo de clipboard")
+        startMonitoring()
     }
     
     @objc private func appDidEnterBackground() {
-        print("📱 App en background - deteniendo monitoreo de clipboard")
-        DispatchQueue.main.async {
-            self.stopMonitoring()
-        }
+        print("📱 App en background - pausando monitoreo de clipboard")
+        stopMonitoring()
     }
     
     /// Inicia el monitoreo de cambios en el portapapeles
@@ -124,7 +114,7 @@ final class ClipboardService: NSObject, ObservableObject {
     private func stopMonitoring() {
         monitoringTimer?.invalidate()
         monitoringTimer = nil
-        print("⏸️ Monitoreo de clipboard DETENIDO")
+        print("⏸️ Monitoreo de clipboard PAUSADO")
     }
     
     /// Verifica si hay cambios en el portapapeles
@@ -140,7 +130,7 @@ final class ClipboardService: NSObject, ObservableObject {
                 addToHistory(url.absoluteString, type: .url)
             } else if pasteboard.image != nil {
                 addToHistory("[Imagen copiada]", type: .image)
-            } else if let text = pasteboard.string {
+            } else if let text = pasteboard.string, !text.isEmpty {
                 addToHistory(text, type: .text)
             }
         }

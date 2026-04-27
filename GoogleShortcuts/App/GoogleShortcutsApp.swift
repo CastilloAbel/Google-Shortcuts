@@ -15,10 +15,6 @@ struct GoogleShortcutsApp: App {
                 .onOpenURL { url in
                     handleIncomingURL(url)
                 }
-                .task {
-                    // Solicitar permisos
-                    PermissionManager.shared.requestAllPermissions()
-                }
         }
     }
     
@@ -69,9 +65,7 @@ struct GoogleShortcutsApp: App {
     }
 }
 
-// MARK: - App Delegate para Background Tasks
-
-import BackgroundTasks
+// MARK: - App Delegate
 
 class AppDelegate: UIResponder, UIApplicationDelegate {
     
@@ -79,17 +73,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
-        // Registrar background task handler
-        BGTaskScheduler.shared.register(
-            forTaskWithIdentifier: "com.abel.googleshortcuts.clipboard.monitoring",
-            using: nil
-        ) { task in
-            if let processingTask = task as? BGProcessingTask {
-                // Procesar background task
-                processingTask.setTaskCompleted(success: true)
-            }
-        }
-        
+        // App inicializada - ClipboardService se inicia automáticamente
+        print("✅ App inicializada")
         return true
     }
 }
