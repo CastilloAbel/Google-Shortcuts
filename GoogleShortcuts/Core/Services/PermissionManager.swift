@@ -5,36 +5,42 @@ import Contacts
 
 /// Gestor centralizado de permisos.
 /// Solicita permisos una sola vez en la instalación.
-actor PermissionManager {
+final class PermissionManager: NSObject, ObservableObject {
     static let shared = PermissionManager()
     
     private let userDefaults = UserDefaults.standard
     private let permissionsKey = "permissions_requested"
     
+    override private init() {
+        super.init()
+    }
+    
     // MARK: - Métodos Públicos
     
     /// Solicita todos los permisos necesarios una sola vez
-    nonisolated func requestAllPermissions() {
+    func requestAllPermissions() {
         Task {
             await requestNotificationPermission()
             await requestContactsPermission()
-            await markPermissionsRequested()
+            markPermissionsRequested()
         }
     }
     
     /// Verifica si ya se solicitaron permisos
-    nonisolated func hasRequestedPermissions() -> Bool {
+    func hasRequestedPermissions() -> Bool {
         UserDefaults.standard.bool(forKey: permissionsKey)
     }
     
     // MARK: - Solicitud de Notificaciones
     
-    /// Solicita permisos para notificaciones (clipboard cambios en background)
+    /// Solicita permisos para notificaciones
     private func requestNotificationPermission() async {
         do {
-            _ = try await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge])
-            DispatchQueue.main.async {
-                UIApplication.shared.registerForRemoteNotifications()
+            let granted = try await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge])
+            if granted {
+                await MainActor.run {
+                    UIApplication.shared.registerForRemoteNotifications()
+                }
             }
         } catch {
             print("❌ Error solicitando permisos de notificaciones: \(error.localizedDescription)")
