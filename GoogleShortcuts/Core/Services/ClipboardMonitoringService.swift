@@ -31,7 +31,9 @@ actor ClipboardMonitoringService {
         print("🎯 Clipboard monitoring iniciado")
         
         // Registrar background task
-        registerBackgroundTask()
+        Task {
+            await registerBackgroundTask()
+        }
         
         // Inicializar estado actual
         updateClipboardState()
@@ -108,15 +110,15 @@ actor ClipboardMonitoringService {
     // MARK: - Notificaciones
     
     private func notifyClipboardChange(content: String) async {
-        let content = UNMutableNotificationContent()
-        content.title = "Portapapeles Actualizado"
-        content.body = String(content.prefix(100))
-        content.sound = .default
-        content.badge = NSNumber(value: UIApplication.shared.applicationIconBadgeNumber + 1)
+        let notificationContent = UNMutableNotificationContent()
+        notificationContent.title = "Portapapeles Actualizado"
+        notificationContent.body = String(content.prefix(100))
+        notificationContent.sound = .default
+        notificationContent.badge = NSNumber(value: UIApplication.shared.applicationIconBadgeNumber + 1)
         
         // Pequeño delay para que se vea como notificación de background
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
-        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
+        let request = UNNotificationRequest(identifier: UUID().uuidString, content: notificationContent, trigger: trigger)
         
         do {
             try await notificationCenter.add(request)
@@ -158,7 +160,7 @@ actor ClipboardMonitoringService {
     // MARK: - Obtener Historial
     
     /// Obtiene el contenido actual del portapapeles formateado
-    nonisolated func getCurrentClipboardContent() -> String? {
+    nonisolated func getCClipboardMonitoringService.urrentClipboardContent() -> String? {
         Task {
             return await shared.getClipboardContent()
         }

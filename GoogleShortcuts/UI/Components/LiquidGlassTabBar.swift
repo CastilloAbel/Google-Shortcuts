@@ -21,7 +21,7 @@ struct LiquidGlassTabBar: ViewModifier {
         
         // Agregar blur background
         let blurEffect = UIBlurEffect(style: .systemMaterial)
-        let blurView = UIVisualEffectView(effect: blurEffect)
+        _ = UIVisualEffectView(effect: blurEffect)
         
         // Color base transparente
         appearance.backgroundColor = UIColor.systemBackground.withAlphaComponent(0.8)
