@@ -53,6 +53,12 @@ targets:
       path: GoogleShortcuts/App/GoogleShortcuts.entitlements
     info:
       path: GoogleShortcuts/App/Info.plist
+      properties:
+        CFBundleURLTypes:
+          - CFBundleURLName: com.abel.googleshortcuts
+            CFBundleURLSchemes:
+              - googleshortcuts
+              - com.googleusercontent.apps.25887787070-g1q6h2806850edpgllg3eboeot43e79p
     postCompileScripts: []
 
 schemes:

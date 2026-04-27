@@ -63,7 +63,7 @@
                 <string>googleshortcuts</string>
                 <!-- OAuth2 Redirect URI scheme (Google redirige a: scheme:/oauthredirect) -->
                 <!-- <string>com.googleusercontent.apps.25887787070-g1q6h2806850edpgllg3eboeot43e79p:/oauthredirect</string> -->
-                <string>com.googleusercontent.apps.25887787070-g1q6h2806850edpgllg3eboeot43e79p:/oauth2redirect</string>
+                <string>com.googleusercontent.apps.25887787070-g1q6h2806850edpgllg3eboeot43e79p</string>
             </array>
         </dict>
     </array>

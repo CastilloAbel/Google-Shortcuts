@@ -1,8 +1,99 @@
+# workflows:
+#   google-shortcuts-build:
+#     name: Build GoogleShortcuts IPA
+#     max_build_duration: 30
+#     instance_type: mac_mini_m2
+#     environment:
+#       xcode: 16.2
+#       vars:
+#         BUNDLE_ID: "com.abel.googleshortcuts"
+#         APP_NAME: "GoogleShortcuts"
+#       groups:
+#         - google_secrets
+#     scripts:
+#       - name: Install XcodeGen
+#         script: |
+#           HOMEBREW_NO_AUTO_UPDATE=1 brew install xcodegen
+
+#       - name: Inject secrets
+#         script: |
+#           cd $CM_BUILD_DIR
+#           if [ -n "$GOOGLE_CLIENT_ID" ]; then
+#             /usr/libexec/PlistBuddy -c "Add :GOOGLE_CLIENT_ID string ${GOOGLE_CLIENT_ID}" \
+#               GoogleShortcuts/App/Info.plist 2>/dev/null || \
+#             /usr/libexec/PlistBuddy -c "Set :GOOGLE_CLIENT_ID ${GOOGLE_CLIENT_ID}" \
+#               GoogleShortcuts/App/Info.plist
+#             echo "✅ Client ID injected"
+#           else
+#             echo "⚠️ GOOGLE_CLIENT_ID not set, skipping injection"
+#           fi
+
+#       - name: Generate Xcode Project
+#         script: |
+#           cd $CM_BUILD_DIR
+#           xcodegen generate
+#           echo "✅ Xcode project generated"
+
+#       - name: Build archive
+#         script: |
+#           cd $CM_BUILD_DIR
+#           xcodebuild archive \
+#             -project GoogleShortcuts.xcodeproj \
+#             -scheme GoogleShortcuts \
+#             -destination "generic/platform=iOS" \
+#             -archivePath $CM_BUILD_DIR/build/GoogleShortcuts.xcarchive \
+#             CODE_SIGNING_ALLOWED=NO \
+#             CODE_SIGNING_REQUIRED=NO \
+#             CODE_SIGN_IDENTITY="" \
+#             DEVELOPMENT_TEAM="" \
+#             PROVISIONING_PROFILE_SPECIFIER="" \
+#             -skipPackagePluginValidation \
+#             -skipMacroValidation \
+#             | xcpretty || true
+          
+#           if [ -d "$CM_BUILD_DIR/build/GoogleShortcuts.xcarchive" ]; then
+#             echo "✅ Archive created successfully"
+#           else
+#             echo "❌ Archive FAILED"
+#             exit 1
+#           fi
+
+#       - name: Create unsigned IPA
+#         script: |
+#           APP_PATH=$(find $CM_BUILD_DIR/build/GoogleShortcuts.xcarchive -name "*.app" -type d | head -1)
+          
+#           if [ -z "$APP_PATH" ]; then
+#             echo "❌ No .app found in archive"
+#             find $CM_BUILD_DIR/build/GoogleShortcuts.xcarchive -type d
+#             exit 1
+#           fi
+          
+#           echo "Found app at: $APP_PATH"
+          
+#           mkdir -p $CM_BUILD_DIR/build/Payload
+#           cp -r "$APP_PATH" $CM_BUILD_DIR/build/Payload/
+          
+#           cd $CM_BUILD_DIR/build
+#           zip -r GoogleShortcuts-unsigned.ipa Payload/
+          
+#           echo "✅ IPA created: $(du -h GoogleShortcuts-unsigned.ipa | cut -f1)"
+
+#     artifacts:
+#       - build/*.ipa
+
+#     publishing:
+#       email:
+#         recipients:
+#           - castillokev.abel@gmail.com
+#         notify:
+#           success: true
+#           failure: true
 workflows:
   google-shortcuts-build:
     name: Build GoogleShortcuts IPA
     max_build_duration: 30
     instance_type: mac_mini_m2
+
     environment:
       xcode: 16.2
       vars:
@@ -10,23 +101,11 @@ workflows:
         APP_NAME: "GoogleShortcuts"
       groups:
         - google_secrets
+
     scripts:
       - name: Install XcodeGen
         script: |
           HOMEBREW_NO_AUTO_UPDATE=1 brew install xcodegen
-
-      - name: Inject secrets
-        script: |
-          cd $CM_BUILD_DIR
-          if [ -n "$GOOGLE_CLIENT_ID" ]; then
-            /usr/libexec/PlistBuddy -c "Add :GOOGLE_CLIENT_ID string ${GOOGLE_CLIENT_ID}" \
-              GoogleShortcuts/App/Info.plist 2>/dev/null || \
-            /usr/libexec/PlistBuddy -c "Set :GOOGLE_CLIENT_ID ${GOOGLE_CLIENT_ID}" \
-              GoogleShortcuts/App/Info.plist
-            echo "✅ Client ID injected"
-          else
-            echo "⚠️ GOOGLE_CLIENT_ID not set, skipping injection"
-          fi
 
       - name: Generate Xcode Project
         script: |
@@ -34,12 +113,36 @@ workflows:
           xcodegen generate
           echo "✅ Xcode project generated"
 
+      - name: Inject Google Client ID into Info.plist
+        script: |
+          cd $CM_BUILD_DIR
+
+          if [ -n "$GOOGLE_CLIENT_ID" ]; then
+            /usr/libexec/PlistBuddy -c "Add :GOOGLE_CLIENT_ID string ${GOOGLE_CLIENT_ID}" \
+              GoogleShortcuts/App/Info.plist 2>/dev/null || \
+            /usr/libexec/PlistBuddy -c "Set :GOOGLE_CLIENT_ID ${GOOGLE_CLIENT_ID}" \
+              GoogleShortcuts/App/Info.plist
+
+            echo "✅ GOOGLE_CLIENT_ID injected"
+          else
+            echo "⚠️ GOOGLE_CLIENT_ID not found"
+          fi
+
+      - name: Verify source Info.plist
+        script: |
+          cd $CM_BUILD_DIR
+          echo "🔎 Checking source Info.plist..."
+          plutil -p GoogleShortcuts/App/Info.plist || true
+
       - name: Build archive
         script: |
           cd $CM_BUILD_DIR
+          set -o pipefail
+
           xcodebuild archive \
             -project GoogleShortcuts.xcodeproj \
             -scheme GoogleShortcuts \
+            -configuration Release \
             -destination "generic/platform=iOS" \
             -archivePath $CM_BUILD_DIR/build/GoogleShortcuts.xcarchive \
             CODE_SIGNING_ALLOWED=NO \
@@ -49,34 +152,43 @@ workflows:
             PROVISIONING_PROFILE_SPECIFIER="" \
             -skipPackagePluginValidation \
             -skipMacroValidation \
-            | xcpretty || true
-          
-          if [ -d "$CM_BUILD_DIR/build/GoogleShortcuts.xcarchive" ]; then
-            echo "✅ Archive created successfully"
-          else
-            echo "❌ Archive FAILED"
+            | xcpretty
+
+      - name: Verify built app Info.plist
+        script: |
+          APP_PLIST=$(find $CM_BUILD_DIR/build/GoogleShortcuts.xcarchive -path "*.app/Info.plist" | head -1)
+
+          if [ -z "$APP_PLIST" ]; then
+            echo "❌ Built Info.plist not found"
             exit 1
           fi
+
+          echo "✅ Built Info.plist found:"
+          echo "$APP_PLIST"
+
+          plutil -p "$APP_PLIST" || true
 
       - name: Create unsigned IPA
         script: |
           APP_PATH=$(find $CM_BUILD_DIR/build/GoogleShortcuts.xcarchive -name "*.app" -type d | head -1)
-          
+
           if [ -z "$APP_PATH" ]; then
             echo "❌ No .app found in archive"
-            find $CM_BUILD_DIR/build/GoogleShortcuts.xcarchive -type d
             exit 1
           fi
-          
-          echo "Found app at: $APP_PATH"
-          
+
+          echo "✅ App found at: $APP_PATH"
+
+          rm -rf $CM_BUILD_DIR/build/Payload
           mkdir -p $CM_BUILD_DIR/build/Payload
-          cp -r "$APP_PATH" $CM_BUILD_DIR/build/Payload/
-          
+
+          cp -R "$APP_PATH" $CM_BUILD_DIR/build/Payload/
+
           cd $CM_BUILD_DIR/build
-          zip -r GoogleShortcuts-unsigned.ipa Payload/
-          
-          echo "✅ IPA created: $(du -h GoogleShortcuts-unsigned.ipa | cut -f1)"
+          zip -r GoogleShortcuts-unsigned.ipa Payload
+
+          echo "✅ IPA created successfully"
+          ls -lh GoogleShortcuts-unsigned.ipa
 
     artifacts:
       - build/*.ipa
