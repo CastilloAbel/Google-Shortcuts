@@ -54,6 +54,17 @@ targets:
     info:
       path: GoogleShortcuts/App/Info.plist
       properties:
+        UILaunchStoryboardName: LaunchScreen
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UIRequiresFullScreen: true
         CFBundleURLTypes:
           - CFBundleURLName: com.abel.googleshortcuts
             CFBundleURLSchemes:
