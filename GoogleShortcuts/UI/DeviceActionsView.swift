@@ -26,7 +26,7 @@ struct DeviceActionsView: View {
                     DeviceActionItem(
                         title: "Modo Bajo Consumo",
                         description: "Verifica si el modo batería está activado",
-                        icon: "bolt.badge",
+                        icon: "battery.25percent.circle",
                         color: .orange
                     )
                 }
@@ -36,7 +36,7 @@ struct DeviceActionsView: View {
                     DeviceActionItem(
                         title: "¿Bluetooth Encendido?",
                         description: "Verifica si Bluetooth está habilitado",
-                        icon: "bluetooth",
+                        icon: "bluetooth.circle",
                         color: .blue
                     )
                     

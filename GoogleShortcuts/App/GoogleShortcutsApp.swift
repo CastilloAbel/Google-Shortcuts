@@ -16,11 +16,8 @@ struct GoogleShortcutsApp: App {
                     handleIncomingURL(url)
                 }
                 .task {
-                    // Solicitar permisos (seguro con task)
+                    // Solicitar permisos
                     PermissionManager.shared.requestAllPermissions()
-                    
-                    // Iniciar monitoreo de portapapeles
-                    ClipboardMonitoringService.shared.startMonitoring()
                 }
         }
     }
@@ -89,7 +86,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 using: nil
             ) { task in
                 if let processingTask = task as? BGProcessingTask {
-                    ClipboardMonitoringService.handleBackgroundClipboardTask(task: processingTask)
+                    // Procesar background task
+                    processingTask.setTaskCompleted(success: true)
                 }
             }
         } catch {
