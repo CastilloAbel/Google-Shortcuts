@@ -3,9 +3,8 @@ import UIKit
 import UserNotifications
 import BackgroundTasks
 
-/// Servicio para monitorear cambios en el portapapeles en foreground y background
-/// - En **foreground**: Monitorea en tiempo real (cada 0.5 segundos)
-/// - En **background**: Chequea cada 15 minutos (vía Background Tasks)
+/// Servicio para monitorear cambios en el portapapeles
+/// Usa NotificationCenter para observar cambios (sin polling)
 final class ClipboardMonitoringService: NSObject, ObservableObject {
     static let shared = ClipboardMonitoringService()
     
@@ -21,31 +20,33 @@ final class ClipboardMonitoringService: NSObject, ObservableObject {
     
     // MARK: - Iniciación del Monitoreo
     
-    /// Inicia el monitoreo del portapapeles
+    /// Inicia el monitoreo del portapapeles (una sola vez)
     func startMonitoring() {
         guard !isMonitoring else { return }
         
         isMonitoring = true
         print("🎯 Clipboard monitoring iniciado")
         
-        // Registrar background task
-        registerBackgroundTask()
-        
         // Inicializar estado actual
         updateClipboardState()
         
-        // Monitoreo en foreground
-        DispatchQueue.global().async { [weak self] in
-            while true {
-                DispatchQueue.main.async {
-                    self?._checkClipboardForChanges()
-                }
-                Thread.sleep(forTimeInterval: 0.5) // Chequeo cada 500ms
-            }
-        }
+        // Registrar observer para cambios de portapapeles
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(clipboardDidChange),
+            name: UIPasteboard.changedNotification,
+            object: nil
+        )
+        
+        // Registrar background task
+        registerBackgroundTask()
     }
     
     // MARK: - Detección de Cambios
+    
+    @objc private func clipboardDidChange() {
+        _checkClipboardForChanges()
+    }
     
     private func _checkClipboardForChanges() {
         let currentChangeCount = UIPasteboard.general.changeCount
@@ -104,27 +105,22 @@ final class ClipboardMonitoringService: NSObject, ObservableObject {
     // MARK: - Notificaciones
     
     private func notifyClipboardChange(content: String) {
+        // Notificación local (no remota)
+        let notificationContent = UNMutableNotificationContent()
+        notificationContent.title = "📋 Portapapeles"
+        notificationContent.body = String(content.prefix(100))
+        notificationContent.sound = .default
+        
+        // Pequeño delay para que se vea como notificación de background
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
+        let request = UNNotificationRequest(identifier: UUID().uuidString, content: notificationContent, trigger: trigger)
+        
         Task {
-            let notificationContent = UNMutableNotificationContent()
-            notificationContent.title = "Portapapeles Actualizado"
-            notificationContent.body = String(content.prefix(100))
-            notificationContent.sound = .default
-            
-            // Obtener badge count de forma segura
-            let badgeNumber = await MainActor.run {
-                UIApplication.shared.applicationIconBadgeNumber
-            }
-            notificationContent.badge = NSNumber(value: badgeNumber + 1)
-            
-            // Pequeño delay para que se vea como notificación de background
-            let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
-            let request = UNNotificationRequest(identifier: UUID().uuidString, content: notificationContent, trigger: trigger)
-            
             do {
                 try await notificationCenter.add(request)
                 print("✅ Notificación enviada")
             } catch {
-                print("❌ Error enviando notificación: \(error)")
+                print("❌ Error enviando notificación: \(error.localizedDescription)")
             }
         }
     }
@@ -132,33 +128,32 @@ final class ClipboardMonitoringService: NSObject, ObservableObject {
     // MARK: - Background Tasks
     
     private func registerBackgroundTask() {
-        // Registrar task que se ejecuta cada 15 minutos
         let request = BGProcessingTaskRequest(identifier: backgroundTaskID)
         request.requiresNetworkConnectivity = false
         request.requiresExternalPower = false
         
         do {
             try BGTaskScheduler.shared.submit(request)
-            print("✅ Background task registrado: cada ~15 minutos")
+            print("✅ Background task registrado")
         } catch {
-            print("❌ Error registrando background task: \(error)")
+            print("❌ Error registrando background task: \(error.localizedDescription)")
         }
     }
     
-    /// Debe llamarse desde AppDelegate cuando el background task se ejecuta
+    /// Llamado desde AppDelegate cuando se ejecuta el background task
     static func handleBackgroundClipboardTask(task: BGProcessingTask) {
         ClipboardMonitoringService.shared._checkClipboardForChanges()
-        
-        // Re-schedule para la próxima ejecución
         ClipboardMonitoringService.shared.registerBackgroundTask()
-        
         task.setTaskCompleted(success: true)
     }
     
     // MARK: - Obtener Contenido Actual
     
-    /// Obtiene el contenido actual del portapapeles formateado
     func getCurrentClipboardContent() -> String? {
         return getClipboardContent()
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
 }

@@ -19,10 +19,26 @@ final class PermissionManager: NSObject, ObservableObject {
     
     /// Solicita todos los permisos necesarios una sola vez
     func requestAllPermissions() {
+        // Solo solicitar si no se han solicitado antes
+        if hasRequestedPermissions() {
+            print("✅ Permisos ya fueron solicitados anteriormente")
+            return
+        }
+        
+        print("📋 Solicitando permisos por primera vez...")
+        
         Task {
+            // Notificaciones
             await requestNotificationPermission()
+            
+            // Contactos (opcional)
             await requestContactsPermission()
-            markPermissionsRequested()
+            
+            // Marcar como solicitados
+            await MainActor.run {
+                self.markPermissionsRequested()
+                print("✅ Permisos solicitados")
+            }
         }
     }
     
@@ -33,15 +49,11 @@ final class PermissionManager: NSObject, ObservableObject {
     
     // MARK: - Solicitud de Notificaciones
     
-    /// Solicita permisos para notificaciones
+    /// Solicita permisos para notificaciones (local only, no remotas)
     private func requestNotificationPermission() async {
         do {
             let granted = try await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge])
-            if granted {
-                await MainActor.run {
-                    UIApplication.shared.registerForRemoteNotifications()
-                }
-            }
+            print(granted ? "✅ Notificaciones permitidas" : "❌ Notificaciones denegadas")
         } catch {
             print("❌ Error solicitando permisos de notificaciones: \(error.localizedDescription)")
         }
@@ -53,7 +65,8 @@ final class PermissionManager: NSObject, ObservableObject {
     private func requestContactsPermission() async {
         let contactStore = CNContactStore()
         do {
-            _ = try await contactStore.requestAccess(for: .contacts)
+            let granted = try await contactStore.requestAccess(for: .contacts)
+            print(granted ? "✅ Contactos permitidos" : "❌ Contactos denegados")
         } catch {
             print("❌ Error solicitando permisos de contactos: \(error.localizedDescription)")
         }
