@@ -17,7 +17,7 @@ final class PermissionManager: NSObject, ObservableObject {
     
     // MARK: - Métodos Públicos
     
-    /// Solicita todos los permisos necesarios una sola vez
+    /// Solicita todos los permisos necesarios una sola vez (seguro para Swift 6)
     func requestAllPermissions() {
         // Solo solicitar si no se han solicitado antes
         if hasRequestedPermissions() {
@@ -27,24 +27,23 @@ final class PermissionManager: NSObject, ObservableObject {
         
         print("📋 Solicitando permisos por primera vez...")
         
+        // Marcar como solicitados INMEDIATAMENTE para evitar duplicados
+        markPermissionsRequested()
+        
+        // Solicitar notificaciones en background (sin esperar)
         Task {
-            // Notificaciones
             await requestNotificationPermission()
-            
-            // Contactos (opcional)
+        }
+        
+        // Solicitar contactos en background (sin esperar)
+        Task {
             await requestContactsPermission()
-            
-            // Marcar como solicitados
-            await MainActor.run {
-                self.markPermissionsRequested()
-                print("✅ Permisos solicitados")
-            }
         }
     }
     
     /// Verifica si ya se solicitaron permisos
     func hasRequestedPermissions() -> Bool {
-        UserDefaults.standard.bool(forKey: permissionsKey)
+        userDefaults.bool(forKey: permissionsKey)
     }
     
     // MARK: - Solicitud de Notificaciones
@@ -53,7 +52,11 @@ final class PermissionManager: NSObject, ObservableObject {
     private func requestNotificationPermission() async {
         do {
             let granted = try await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge])
-            print(granted ? "✅ Notificaciones permitidas" : "❌ Notificaciones denegadas")
+            if granted {
+                print("✅ Notificaciones permitidas")
+            } else {
+                print("❌ Notificaciones denegadas por el usuario")
+            }
         } catch {
             print("❌ Error solicitando permisos de notificaciones: \(error.localizedDescription)")
         }
@@ -66,7 +69,11 @@ final class PermissionManager: NSObject, ObservableObject {
         let contactStore = CNContactStore()
         do {
             let granted = try await contactStore.requestAccess(for: .contacts)
-            print(granted ? "✅ Contactos permitidos" : "❌ Contactos denegados")
+            if granted {
+                print("✅ Contactos permitidos")
+            } else {
+                print("❌ Contactos denegados por el usuario")
+            }
         } catch {
             print("❌ Error solicitando permisos de contactos: \(error.localizedDescription)")
         }
@@ -74,8 +81,8 @@ final class PermissionManager: NSObject, ObservableObject {
     
     // MARK: - Marcado de Permisos
     
-    /// Marca que los permisos ya fueron solicitados
+    /// Marca que los permisos ya fueron solicitados (sincrónico y seguro)
     private func markPermissionsRequested() {
-        UserDefaults.standard.set(true, forKey: permissionsKey)
+        userDefaults.set(true, forKey: permissionsKey)
     }
 }

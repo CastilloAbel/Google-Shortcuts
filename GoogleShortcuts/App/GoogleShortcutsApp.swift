@@ -15,8 +15,8 @@ struct GoogleShortcutsApp: App {
                 .onOpenURL { url in
                     handleIncomingURL(url)
                 }
-                .onAppear {
-                    // Solicitar permisos una sola vez en la instalación
+                .task {
+                    // Solicitar permisos (seguro con task)
                     PermissionManager.shared.requestAllPermissions()
                     
                     // Iniciar monitoreo de portapapeles
@@ -83,11 +83,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
         // Registrar background task handler
-        BGTaskScheduler.shared.register(
-            forTaskWithIdentifier: "com.abel.googleshortcuts.clipboard.monitoring",
-            using: nil
-        ) { task in
-            ClipboardMonitoringService.handleBackgroundClipboardTask(task: task as! BGProcessingTask)
+        do {
+            try BGTaskScheduler.shared.register(
+                forTaskWithIdentifier: "com.abel.googleshortcuts.clipboard.monitoring",
+                using: nil
+            ) { task in
+                if let processingTask = task as? BGProcessingTask {
+                    ClipboardMonitoringService.handleBackgroundClipboardTask(task: processingTask)
+                }
+            }
+        } catch {
+            print("❌ Error registrando background task: \(error.localizedDescription)")
         }
         
         return true
