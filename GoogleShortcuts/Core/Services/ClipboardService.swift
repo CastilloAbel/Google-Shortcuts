@@ -115,7 +115,6 @@ final class ClipboardService: NSObject, ObservableObject {
         
         print("✅ Monitoreo iniciado - Timer activo")
     }
-    }
     
     /// Detiene el monitoreo
     func stopMonitoring() {

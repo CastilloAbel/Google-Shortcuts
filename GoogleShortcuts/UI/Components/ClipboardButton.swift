@@ -2,7 +2,7 @@ import SwiftUI
 
 /// Botón de portapapeles que muestra un menú con el histórico
 struct ClipboardButton: View {
-    @StateObject private var clipboardService = ClipboardService.shared
+    private let clipboardService = ClipboardService.shared
     @State private var showMenu = false
     
     var onSelect: (ClipboardItem) -> Void
@@ -16,7 +16,7 @@ struct ClipboardButton: View {
                 .disabled(true)
             } else {
                 Section("Últimos items") {
-                    ForEach(clipboardService.history.prefix(10)) { item in
+                    ForEach(Array(clipboardService.history.prefix(10)), id: \.id) { item in
                         Button(action: {
                             onSelect(item)
                             clipboardService.copyToClipboard(item)

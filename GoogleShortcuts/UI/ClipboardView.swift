@@ -1,9 +1,10 @@
 import SwiftUI
 
-/// Vista que muestra el histórico del portapapeles
+/// Vista que muestra el histórico del portapapeles  
 struct ClipboardView: View {
-    @StateObject var clipboardService = ClipboardService.shared
     @State private var showConfirmClear = false
+    // Observar cambios en el singleton sin crear duplicados
+    @StateObject private var observedService = ClipboardService.shared
     
     var body: some View {
         VStack(spacing: 0) {
@@ -17,14 +18,14 @@ struct ClipboardView: View {
                 
                 // Botón refresh (capturar del portapapeles)
                 Button(action: {
-                    clipboardService.captureCurrentClipboard()
+                    observedService.captureCurrentClipboard()
                 }) {
                     Image(systemName: "arrow.clockwise")
                         .foregroundColor(.blue)
                 }
                 
                 // Botón limpiar histórico
-                if !clipboardService.history.isEmpty {
+                if !observedService.history.isEmpty {
                     Button(action: { showConfirmClear = true }) {
                         Image(systemName: "trash")
                             .foregroundColor(.red)
@@ -36,7 +37,7 @@ struct ClipboardView: View {
             Divider()
             
             // MARK: - Content
-            if clipboardService.history.isEmpty {
+            if observedService.history.isEmpty {
                 VStack(spacing: 16) {
                     Image(systemName: "doc.on.clipboard")
                         .font(.system(size: 48))
@@ -55,14 +56,14 @@ struct ClipboardView: View {
                 .padding()
             } else {
                 List {
-                    ForEach(clipboardService.history) { item in
+                    ForEach(observedService.history) { item in
                         ClipboardItemRow(
                             item: item,
                             onCopy: {
-                                clipboardService.copyToClipboard(item)
+                                observedService.copyToClipboard(item)
                             },
                             onDelete: {
-                                clipboardService.removeItem(item)
+                                observedService.removeItem(item)
                             }
                         )
                     }
@@ -75,7 +76,7 @@ struct ClipboardView: View {
             isPresented: $showConfirmClear,
             actions: {
                 Button("Limpiar", role: .destructive) {
-                    clipboardService.clearHistory()
+                    observedService.clearHistory()
                 }
                 Button("Cancelar", role: .cancel) {}
             },
