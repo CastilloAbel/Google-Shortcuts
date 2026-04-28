@@ -2,6 +2,7 @@ import Foundation
 import UIKit
 import UserNotifications
 import Contacts
+import CoreLocation
 
 /// Gestor centralizado de permisos.
 /// Solicita permisos una sola vez en la instalación.
@@ -10,6 +11,7 @@ final class PermissionManager: NSObject, ObservableObject {
     
     private let userDefaults = UserDefaults.standard
     private let permissionsKey = "permissions_requested"
+    private lazy var locationManager = CLLocationManager()
     
     override private init() {
         super.init()
@@ -29,6 +31,9 @@ final class PermissionManager: NSObject, ObservableObject {
         
         // Marcar como solicitados INMEDIATAMENTE para evitar duplicados
         markPermissionsRequested()
+        
+        // Solicitar ubicación (para mantener app en background)
+        requestLocationPermission()
         
         // Solicitar notificaciones en background (sin esperar)
         Task {
@@ -76,6 +81,25 @@ final class PermissionManager: NSObject, ObservableObject {
             }
         } catch {
             print("❌ Error solicitando permisos de contactos: \(error.localizedDescription)")
+        }
+    }
+    
+    // MARK: - Solicitud de Ubicación
+    
+    /// Solicita permisos de ubicación para mantener la app en background
+    /// Esto permite que el monitoreo del portapapeles continúe en segundo plano
+    private func requestLocationPermission() {
+        let status = CLLocationManager.authorizationStatus()
+        
+        // Solo solicitar si aún no se ha decidido
+        if status == .notDetermined {
+            // Solicitar "Always" para máxima compatibilidad con background monitoring
+            locationManager.requestAlwaysAuthorization()
+            print("📍 Solicitando permiso de ubicación (para background monitoring)")
+        } else if status == .denied || status == .restricted {
+            print("⚠️ Permiso de ubicación denegado. El monitoreo automático puede ser limitado.")
+        } else if status == .authorizedAlways || status == .authorizedWhenInUse {
+            print("✅ Ubicación permitida - Background monitoring activo")
         }
     }
     
