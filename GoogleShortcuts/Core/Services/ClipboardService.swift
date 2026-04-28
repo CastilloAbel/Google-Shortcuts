@@ -84,8 +84,14 @@ final class ClipboardService: NSObject, ObservableObject {
     }
     
     @objc private func appDidEnterForeground() {
-        print("📱 App en foreground - reanudando monitoreo")
+        print("📱 App en foreground - verificando portapapeles")
+        // Resetear el changeCount para forzar una verificación
+        lastPasteboardChangeCount = UIPasteboard.general.changeCount - 1
+        // Iniciar/reiniciar monitoreo
+        stopMonitoring()
         startMonitoring()
+        // Verificar inmediatamente
+        checkClipboard()
     }
     
     @objc private func appDidEnterBackground() {
@@ -113,7 +119,11 @@ final class ClipboardService: NSObject, ObservableObject {
             }
         }
         
-        print("✅ Monitoreo iniciado - Timer activo")
+        // Asegurar que el timer está corriendo en RunLoop
+        if let timer = monitoringTimer {
+            RunLoop.main.add(timer, forMode: .common)
+            print("✅ Monitoreo iniciado - Timer activo en RunLoop.main")
+        }
     }
     
     /// Detiene el monitoreo
@@ -124,7 +134,7 @@ final class ClipboardService: NSObject, ObservableObject {
     }
     
     /// Verifica si hay cambios en el portapapeles
-    private func checkClipboard() {
+    func checkClipboard() {
         let pasteboard = UIPasteboard.general
         let currentChangeCount = pasteboard.changeCount
         

@@ -36,7 +36,7 @@ struct DeviceActionsView: View {
                     DeviceActionItem(
                         title: "¿Bluetooth Encendido?",
                         description: "Verifica si Bluetooth está habilitado",
-                        icon: "bluetooth.circle",
+                        icon: "antenna.radiowaves.left.and.right",
                         color: .blue
                     )
                     

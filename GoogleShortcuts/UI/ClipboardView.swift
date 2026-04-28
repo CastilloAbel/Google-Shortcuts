@@ -100,20 +100,26 @@ struct ClipboardItemRow: View {
             // Si es una imagen, mostrar preview
             if item.type == .image, let image = ClipboardService.shared.getImage(from: item) {
                 ZStack(alignment: .topTrailing) {
-                    Image(uiImage: image)
-                        .resizable()
-                        .scaledToFill()
-                        .frame(height: 150)
-                        .clipped()
-                        .cornerRadius(8)
+                    Button(action: onCopy) {
+                        Image(uiImage: image)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(height: 150)
+                            .clipped()
+                            .cornerRadius(8)
+                    }
                     
-                    // Badge con fecha
+                    // Badge con fecha y delete button
                     VStack(alignment: .trailing, spacing: 4) {
                         Button(action: onDelete) {
                             Image(systemName: "xmark.circle.fill")
-                                .font(.system(size: 22))
-                                .foregroundColor(.white)
-                                .shadow(radius: 2)
+                                .font(.system(size: 18))
+                                .foregroundColor(.red)
+                                .background(
+                                    Circle()
+                                        .fill(Color.white)
+                                        .frame(width: 22, height: 22)
+                                )
                         }
                         
                         Text(item.relativeTime)
