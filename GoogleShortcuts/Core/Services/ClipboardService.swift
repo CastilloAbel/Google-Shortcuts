@@ -93,12 +93,6 @@ final class ClipboardService: NSObject, ObservableObject {
         stopMonitoring()
     }
     
-    nonisolated deinit {
-        DispatchQueue.main.async {
-            NotificationCenter.default.removeObserver(self)
-        }
-    }
-    
     // MARK: - Monitoring
     
     /// Inicia el monitoreo del portapapeles
