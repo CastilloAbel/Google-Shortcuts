@@ -7,6 +7,7 @@ struct SettingsView: View {
     
     @State private var isAuthenticated = false
     @State private var locationPermissionStatus = "⏸️ No determinado"
+    @State private var isRequestingLocation = false
     
     var body: some View {
         NavigationView {
@@ -33,6 +34,12 @@ struct SettingsView: View {
             .onAppear {
                 isAuthenticated = (try? TokenStorage.shared.loadTokens()) != nil
                 locationPermissionStatus = PermissionManager.shared.getLocationPermissionStatus()
+            }
+            .onDisappear {
+                // Refrescar estado cuando regresa de Ajustes del sistema
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    locationPermissionStatus = PermissionManager.shared.getLocationPermissionStatus()
+                }
             }
         }
     }
@@ -89,37 +96,76 @@ struct SettingsView: View {
     
     private var clipboardSection: some View {
         Section("Portapapeles automático") {
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 12) {
                 HStack {
                     Text("Estado de ubicación")
                     Spacer()
-                    Text(locationPermissionStatus)
+                    if isRequestingLocation {
+                        HStack(spacing: 4) {
+                            ProgressView()
+                                .scaleEffect(0.8)
+                            Text("Solicitando...")
+                        }
+                        .font(.caption)
+                        .foregroundColor(.blue)
+                    } else {
+                        Text(locationPermissionStatus)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                
+                if !isRequestingLocation {
+                    Button(action: {
+                        isRequestingLocation = true
+                        print("🔔 [SettingsView] Usuario tocó el botón de ubicación")
+                        
+                        PermissionManager.shared.requestLocationPermissionManually()
+                        
+                        // Actualizar estado después de delays progresivos
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            locationPermissionStatus = PermissionManager.shared.getLocationPermissionStatus()
+                            print("🔔 [SettingsView] Estado actualizado: \(locationPermissionStatus)")
+                        }
+                        
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                            isRequestingLocation = false
+                        }
+                    }) {
+                        HStack {
+                            Image(systemName: "location.fill")
+                            Text("Habilitar ubicación en segundo plano")
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 8)
+                        .foregroundColor(.white)
+                        .background(Color.blue)
+                        .cornerRadius(8)
+                    }
+                    .buttonStyle(.plain)
+                }
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("¿Por qué es necesario?")
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                    
+                    Text("La app necesita acceso a tu ubicación para mantener activo el monitoreo automático del portapapeles en segundo plano. Tu ubicación nunca se guarda ni se comparte.")
                         .font(.caption)
                         .foregroundColor(.secondary)
-                }
-                
-                Button(action: {
-                    PermissionManager.shared.requestLocationPermissionManually()
-                    // Actualizar estado después de un pequeño delay
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        locationPermissionStatus = PermissionManager.shared.getLocationPermissionStatus()
+                    
+                    Text("\n📌 Si no aparece el popup: Ve a Ajustes del sistema > Google Shortcuts > Ubicación > Selecciona 'Always'")
+                        .font(.caption2)
+                        .foregroundColor(.orange)
+                    
+                    // Botón para abrir Ajustes del sistema
+                    if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
+                        Link("⚙️ Abrir Ajustes", destination: settingsURL)
+                            .font(.caption2)
+                            .foregroundColor(.blue)
+                            .padding(.top, 4)
                     }
-                }) {
-                    HStack {
-                        Image(systemName: "location.fill")
-                        Text("Habilitar ubicación en segundo plano")
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 8)
-                    .foregroundColor(.white)
-                    .background(Color.blue)
-                    .cornerRadius(8)
                 }
-                .buttonStyle(.plain)
-                
-                Text("La app necesita acceso a tu ubicación para mantener activo el monitoreo automático del portapapeles en segundo plano. Tu ubicación nunca se guarda ni se comparte.")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
             }
             .padding(.vertical, 4)
         }
