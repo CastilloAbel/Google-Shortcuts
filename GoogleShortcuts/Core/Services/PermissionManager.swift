@@ -6,20 +6,20 @@ import CoreLocation
 
 /// Gestor centralizado de permisos.
 /// Solicita permisos una sola vez en la instalación.
-final class PermissionManager: NSObject, ObservableObject, CLLocationManagerDelegate {
+final class PermissionManager: NSObject, ObservableObject, CLLocationManagerDelegate, Sendable {
     static let shared = PermissionManager()
     
-    private let userDefaults = UserDefaults.standard
-    private let permissionsKey = "permissions_requested"
-    private let locationUpgradeKey = "location_upgrade_requested"
+    nonisolated private let userDefaults = UserDefaults.standard
+    nonisolated private let permissionsKey = "permissions_requested"
+    nonisolated private let locationUpgradeKey = "location_upgrade_requested"
     
-    /// Strong reference al locationManager (no lazy para que no se deinicialice)
+    /// Strong reference al locationManager (inicializado inline)
     private let locationManager: CLLocationManager
     
     override private init() {
-        super.init()
-        // Inicializar locationManager inmediatamente
+        // Inicializar locationManager ANTES de super.init()
         self.locationManager = CLLocationManager()
+        super.init()
         // Configurar el location manager con este objeto como delegate
         self.locationManager.delegate = self
         print("✅ PermissionManager inicializado con CLLocationManager")
@@ -69,7 +69,7 @@ final class PermissionManager: NSObject, ObservableObject, CLLocationManagerDele
     
     /// Verifica el estado actual del permiso de ubicación
     func getLocationPermissionStatus() -> String {
-        let status = CLLocationManager.authorizationStatus()
+        let status = locationManager.authorizationStatus
         switch status {
         case .authorizedAlways:
             return "✅ Siempre"
@@ -125,11 +125,13 @@ final class PermissionManager: NSObject, ObservableObject, CLLocationManagerDele
     /// 1. Primero pide "When in Use" (esto muestra el primer dialog)
     /// 2. Luego, si es aceptado, pide el upgrade a "Always"
     private func requestLocationPermission() {
-        let status = CLLocationManager.authorizationStatus()
+        let status = locationManager.authorizationStatus
         print("📍 Estado actual de ubicación: \(status.rawValue)")
         
         // Asegurar que se ejecuta en main thread
-        DispatchQueue.main.async {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
             // Solo solicitar si aún no se ha decidido
             if status == .notDetermined {
                 print("📍 Solicitando permiso de ubicación (paso 1: When in Use)...")
@@ -169,7 +171,7 @@ final class PermissionManager: NSObject, ObservableObject, CLLocationManagerDele
     
     /// Se llama cuando el usuario responde a la solicitud de permiso de ubicación
     nonisolated func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-        let status = CLLocationManager.authorizationStatus()
+        let status = manager.authorizationStatus
         print("📍 [DELEGATE] locationManagerDidChangeAuthorization llamado")
         print("📍 [DELEGATE] Estado: \(status.rawValue)")
         
