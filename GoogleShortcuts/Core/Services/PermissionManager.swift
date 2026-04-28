@@ -12,12 +12,17 @@ final class PermissionManager: NSObject, ObservableObject, CLLocationManagerDele
     private let userDefaults = UserDefaults.standard
     private let permissionsKey = "permissions_requested"
     private let locationUpgradeKey = "location_upgrade_requested"
-    private lazy var locationManager = CLLocationManager()
+    
+    /// Strong reference al locationManager (no lazy para que no se deinicialice)
+    private let locationManager: CLLocationManager
     
     override private init() {
         super.init()
+        // Inicializar locationManager inmediatamente
+        self.locationManager = CLLocationManager()
         // Configurar el location manager con este objeto como delegate
-        locationManager.delegate = self
+        self.locationManager.delegate = self
+        print("✅ PermissionManager inicializado con CLLocationManager")
     }
     
     // MARK: - Métodos Públicos
@@ -57,7 +62,9 @@ final class PermissionManager: NSObject, ObservableObject, CLLocationManagerDele
     /// Método público para solicitar permiso de ubicación manualmente
     func requestLocationPermissionManually() {
         print("📍 Usuario solicitando permiso de ubicación desde Ajustes...")
-        requestLocationPermission()
+        DispatchQueue.main.async {
+            self.requestLocationPermission()
+        }
     }
     
     /// Verifica el estado actual del permiso de ubicación
@@ -116,23 +123,29 @@ final class PermissionManager: NSObject, ObservableObject, CLLocationManagerDele
     
     /// Solicita permisos de ubicación mediante proceso stepwise:
     /// 1. Primero pide "When in Use" (esto muestra el primer dialog)
-    /// 2. Luego, si es aceptado, pid el upgrade a "Always"
+    /// 2. Luego, si es aceptado, pide el upgrade a "Always"
     private func requestLocationPermission() {
         let status = CLLocationManager.authorizationStatus()
+        print("📍 Estado actual de ubicación: \(status.rawValue)")
         
-        // Solo solicitar si aún no se ha decidido
-        if status == .notDetermined {
-            print("📍 Solicitando permiso de ubicación (paso 1: When in Use)...")
-            // Primero solicitamos "When in Use"
-            locationManager.requestWhenInUseAuthorization()
-        } else if status == .denied || status == .restricted {
-            print("⚠️ Permiso de ubicación denegado. El monitoreo automático puede ser limitado.")
-        } else if status == .authorizedAlways {
-            print("✅ Ubicación permitida (Always) - Background monitoring activo")
-        } else if status == .authorizedWhenInUse {
-            print("⏳ Ubicación permitida (When in Use) - Solicitando upgrade a Always...")
-            // Si ya tiene "When in Use", solicitar upgrade a "Always"
-            requestLocationUpgrade()
+        // Asegurar que se ejecuta en main thread
+        DispatchQueue.main.async {
+            // Solo solicitar si aún no se ha decidido
+            if status == .notDetermined {
+                print("📍 Solicitando permiso de ubicación (paso 1: When in Use)...")
+                print("📍 CLLocationManager delegate: \(self.locationManager.delegate != nil ? "✅ Configurado" : "❌ NO configurado")")
+                // Primero solicitamos "When in Use"
+                self.locationManager.requestWhenInUseAuthorization()
+                print("📍 ✅ Llamada a requestWhenInUseAuthorization() ejecutada")
+            } else if status == .denied || status == .restricted {
+                print("⚠️ Permiso de ubicación denegado. El monitoreo automático puede ser limitado.")
+            } else if status == .authorizedAlways {
+                print("✅ Ubicación permitida (Always) - Background monitoring activo")
+            } else if status == .authorizedWhenInUse {
+                print("⏳ Ubicación permitida (When in Use) - Solicitando upgrade a Always...")
+                // Si ya tiene "When in Use", solicitar upgrade a "Always"
+                self.requestLocationUpgrade()
+            }
         }
     }
     
@@ -140,12 +153,16 @@ final class PermissionManager: NSObject, ObservableObject, CLLocationManagerDele
     private func requestLocationUpgrade() {
         // Evitar solicitar upgrade múltiples veces
         if userDefaults.bool(forKey: locationUpgradeKey) {
+            print("⚠️ Ya se solicitó upgrade anteriormente")
             return
         }
         
+        print("📍 Marcando upgrade como solicitado y llamando a requestAlwaysAuthorization()...")
         userDefaults.set(true, forKey: locationUpgradeKey)
-        print("📍 Solicitando upgrade a Always...")
-        locationManager.requestAlwaysAuthorization()
+        DispatchQueue.main.async {
+            self.locationManager.requestAlwaysAuthorization()
+            print("📍 ✅ Llamada a requestAlwaysAuthorization() ejecutada")
+        }
     }
     
     // MARK: - CLLocationManagerDelegate
@@ -153,18 +170,22 @@ final class PermissionManager: NSObject, ObservableObject, CLLocationManagerDele
     /// Se llama cuando el usuario responde a la solicitud de permiso de ubicación
     nonisolated func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         let status = CLLocationManager.authorizationStatus()
+        print("📍 [DELEGATE] locationManagerDidChangeAuthorization llamado")
+        print("📍 [DELEGATE] Estado: \(status.rawValue)")
         
         DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
             switch status {
             case .authorizedAlways:
-                print("✅ Permiso de ubicación: Always (Background monitoring totalmente activo)")
+                print("✅ [DELEGATE] Permiso de ubicación: Always (Background monitoring totalmente activo)")
             case .authorizedWhenInUse:
-                print("⏳ Permiso de ubicación: When in Use (Solicitando upgrade...)")
-                self?.requestLocationUpgrade()
+                print("⏳ [DELEGATE] Permiso de ubicación: When in Use (Solicitando upgrade...)")
+                self.requestLocationUpgrade()
             case .denied, .restricted:
-                print("❌ Permiso de ubicación denegado")
+                print("❌ [DELEGATE] Permiso de ubicación denegado")
             case .notDetermined:
-                print("⏳ Permiso de ubicación: Pendiente")
+                print("⏳ [DELEGATE] Permiso de ubicación: Pendiente")
             @unknown default:
                 break
             }
