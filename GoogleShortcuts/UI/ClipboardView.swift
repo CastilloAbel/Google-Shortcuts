@@ -1,4 +1,5 @@
 import SwiftUI
+import Foundation
 
 /// Vista que muestra el histórico del portapapeles  
 struct ClipboardView: View {
@@ -146,6 +147,43 @@ struct ClipboardItemRow: View {
                     .buttonStyle(.plain)
                 }
                 .padding(.horizontal, 8)
+            } else if item.type == .pdf || item.type == .file {
+                // Mostrar PDFs y archivos
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Image(systemName: item.type == .pdf ? "doc.pdf.fill" : "doc.fill")
+                            .font(.system(size: 32))
+                            .foregroundColor(item.type == .pdf ? .red : .blue)
+                        
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(item.fileName ?? "Archivo")
+                                .font(.headline)
+                                .lineLimit(1)
+                            
+                            if let fileSize = item.fileSize {
+                                let sizeStr = ByteCountFormatter.string(fromByteCount: Int64(fileSize), countStyle: .file)
+                                Text(sizeStr)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            
+                            Text(item.relativeTime)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        Spacer()
+                        
+                        Button(action: onDelete) {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.system(size: 18))
+                                .foregroundColor(.red)
+                        }
+                    }
+                    .padding(12)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(8)
+                }
             } else {
                 // Texto o URL - vista normal
                 HStack {
@@ -198,6 +236,10 @@ struct ClipboardItemRow: View {
             return "link"
         case .image:
             return "photo"
+        case .pdf:
+            return "doc.pdf"
+        case .file:
+            return "doc"
         case .unknown:
             return "questionmark.circle"
         }
@@ -211,6 +253,10 @@ struct ClipboardItemRow: View {
             return .purple
         case .image:
             return .green
+        case .pdf:
+            return .red
+        case .file:
+            return .orange
         case .unknown:
             return .gray
         }

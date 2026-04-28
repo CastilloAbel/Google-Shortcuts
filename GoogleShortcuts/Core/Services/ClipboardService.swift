@@ -8,26 +8,44 @@ public struct ClipboardItem: Identifiable, Codable, Hashable, Sendable {
     public let content: String
     public let timestamp: Date
     public let type: ContentType
+    public let fileName: String?  // Para archivos
+    public let fileSize: Int?      // Tamaño en bytes
     
     public enum ContentType: String, Codable, Sendable {
         case text
         case url
         case image
+        case pdf
+        case file
         case unknown
     }
     
-    public init(content: String, type: ContentType = .text) {
+    public init(content: String, type: ContentType = .text, fileName: String? = nil, fileSize: Int? = nil) {
         self.id = UUID()
         self.content = content
         self.timestamp = Date()
         self.type = type
+        self.fileName = fileName
+        self.fileSize = fileSize
     }
     
     public var displayText: String {
-        let maxLength = 100
-        return content.count > maxLength
-            ? String(content.prefix(maxLength)) + "..."
-            : content
+        switch type {
+        case .file, .pdf:
+            if let name = fileName {
+                return "📁 \(name)"
+            }
+            return "📁 Archivo"
+        case .image:
+            return "🖼️ Imagen"
+        case .url:
+            return "🔗 URL"
+        case .text, .unknown:
+            let maxLength = 100
+            return content.count > maxLength
+                ? String(content.prefix(maxLength)) + "..."
+                : content
+        }
     }
     
     public var relativeTime: String {
@@ -50,6 +68,7 @@ final class ClipboardService: NSObject, ObservableObject {
     private var monitoringTimer: Timer?
     private let maxHistoryItems = 50
     private let userDefaultsKey = "clipboard_history"
+    private var checkClipboardCallCount = 0
     
     nonisolated private override init() {
         super.init()
@@ -113,17 +132,17 @@ final class ClipboardService: NSObject, ObservableObject {
         print("📊 ChangeCount inicial: \(lastPasteboardChangeCount)")
         
         // Crear timer que monitorea cada 0.5 segundos
-        monitoringTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
+        let timer = Timer(timeInterval: 0.5, repeats: true) { [weak self] _ in
             Task { @MainActor in
                 self?.checkClipboard()
             }
         }
         
-        // Asegurar que el timer está corriendo en RunLoop
-        if let timer = monitoringTimer {
-            RunLoop.main.add(timer, forMode: .common)
-            print("✅ Monitoreo iniciado - Timer activo en RunLoop.main")
-        }
+        // Agregar a RunLoop.main explícitamente
+        RunLoop.main.add(timer, forMode: .common)
+        monitoringTimer = timer
+        
+        print("✅ Monitoreo iniciado - Timer activo en RunLoop.main.common")
     }
     
     /// Detiene el monitoreo
@@ -138,26 +157,37 @@ final class ClipboardService: NSObject, ObservableObject {
         let pasteboard = UIPasteboard.general
         let currentChangeCount = pasteboard.changeCount
         
+        // Debug: mostrar que el Timer está corriendo (cada 20 llamadas)
+        checkClipboardCallCount += 1
+        if checkClipboardCallCount % 20 == 0 {
+            print("💓 Heartbeat: Timer activo (changeCount: \(currentChangeCount))")
+        }
+        
         if currentChangeCount != lastPasteboardChangeCount {
-            print("📍 Cambio detectado: \(lastPasteboardChangeCount) → \(currentChangeCount)")
+            print("📍 ¡CAMBIO DETECTADO! \(lastPasteboardChangeCount) → \(currentChangeCount)")
             lastPasteboardChangeCount = currentChangeCount
             
             // Detectar tipo de contenido y agregar al histórico
             if let url = pasteboard.url {
-                print("🔗 URL detectada")
+                print("🔗 URL detectada: \(url)")
                 addToHistory(url.absoluteString, type: .url)
             } else if let image = pasteboard.image {
-                print("🖼️ Imagen detectada")
+                print("🖼️ Imagen detectada (\(image.size.width)x\(image.size.height))")
                 // Convertir imagen a base64 para persistencia
                 if let imageData = image.jpegData(compressionQuality: 0.8) {
                     let base64String = imageData.base64EncodedString()
                     addToHistory(base64String, type: .image)
                 }
             } else if let text = pasteboard.string, !text.isEmpty {
+                // Ignorar strings base64 largos (probablemente imágenes que acabamos de copiar)
+                if text.count > 10000 && text.contains("=") && !text.contains(" ") {
+                    print("⏭️ Ignorando texto base64 (probablemente imagen copiada)")
+                    return
+                }
                 print("📝 Texto detectado: \(text.prefix(50))")
                 addToHistory(text, type: .text)
             } else {
-                print("⚠️ Sin contenido reconocible")
+                print("⚠️ Sin contenido reconocible (tipos disponibles: \(pasteboard.types))")
             }
         }
     }
@@ -223,10 +253,27 @@ final class ClipboardService: NSObject, ObservableObject {
     
     /// Copia un item del histórico al portapapeles
     func copyToClipboard(_ item: ClipboardItem) {
-        UIPasteboard.general.string = item.content
+        // Desactivar temporalmente el monitoreo para evitar que se agregue al histórico
+        stopMonitoring()
+        
+        // Copiar según el tipo
+        if item.type == .image, let image = getImage(from: item) {
+            // Para imágenes, copiar la imagen real, no la base64
+            UIPasteboard.general.image = image
+            print("✅ Imagen copiada al portapapeles")
+        } else {
+            // Para texto y URLs, copiar como string
+            UIPasteboard.general.string = item.content
+            print("✅ Copiado: \(item.content.prefix(30))...")
+        }
+        
         currentContent = item.content
         lastPasteboardChangeCount = UIPasteboard.general.changeCount
-        print("✅ Copiado: \(item.content.prefix(30))...")
+        
+        // Reanudar monitoreo después de un pequeño delay
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+            self?.startMonitoring()
+        }
     }
     
     /// Limpia el histórico
