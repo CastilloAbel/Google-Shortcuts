@@ -95,20 +95,23 @@ struct ClipboardItemRow: View {
     let onDelete: () -> Void
     
     @State private var showDetail = false
+    @State private var showImageMenu = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             // Si es una imagen, mostrar preview
             if item.type == .image, let image = ClipboardService.shared.getImage(from: item) {
                 ZStack(alignment: .topTrailing) {
-                    Button(action: onCopy) {
-                        Image(uiImage: image)
-                            .resizable()
-                            .scaledToFill()
-                            .frame(height: 150)
-                            .clipped()
-                            .cornerRadius(8)
-                    }
+                    // Imagen con tap para abrir menu
+                    Image(uiImage: image)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(height: 150)
+                        .clipped()
+                        .cornerRadius(8)
+                        .onTapGesture {
+                            showImageMenu = true
+                        }
                     
                     // Badge con fecha y delete button
                     VStack(alignment: .trailing, spacing: 4) {
@@ -140,11 +143,22 @@ struct ClipboardItemRow: View {
                     
                     Spacer()
                     
-                    Button(action: onCopy) {
-                        Image(systemName: "doc.on.doc")
+                    Menu {
+                        Button(action: onCopy) {
+                            Label("Copiar", systemImage: "doc.on.doc")
+                        }
+                        
+                        Button(action: { shareImage(image) }) {
+                            Label("Compartir", systemImage: "square.and.arrow.up")
+                        }
+                        
+                        Button(action: { saveToPhotos(image) }) {
+                            Label("Guardar en Fotos", systemImage: "photo.on.rectangle")
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis.circle")
                             .foregroundColor(.blue)
                     }
-                    .buttonStyle(.plain)
                 }
                 .padding(.horizontal, 8)
             } else if item.type == .pdf || item.type == .file {
@@ -261,6 +275,23 @@ struct ClipboardItemRow: View {
             return .gray
         }
     }
+    
+    // MARK: - Acciones para Imágenes
+    
+    private func shareImage(_ image: UIImage) {
+        let activityVC = UIActivityViewController(activityItems: [image], applicationActivities: nil)
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let window = windowScene.windows.first,
+           let rootVC = window.rootViewController {
+            rootVC.present(activityVC, animated: true)
+        }
+    }
+    
+    private func saveToPhotos(_ image: UIImage) {
+        UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
+        // Mostrar toast o feedback visual
+        print("✅ Imagen guardada en Fotos")
+    }
 }
 
 /// Vista detallada de un item del portapapeles
@@ -268,6 +299,7 @@ struct ClipboardDetailView: View {
     let item: ClipboardItem
     let onCopy: () -> Void
     @Environment(\.dismiss) var dismiss
+    @Environment(\.openURL) var openURL
     
     var body: some View {
         NavigationStack {
@@ -311,20 +343,59 @@ struct ClipboardDetailView: View {
                     
                     Spacer()
                     
-                    // Botón copiar
-                    Button(action: {
-                        onCopy()
-                        dismiss()
-                    }) {
-                        HStack {
-                            Image(systemName: "doc.on.doc")
-                            Text("Copiar")
+                    // Botones de acción según el tipo
+                    VStack(spacing: 12) {
+                        // Botón copiar
+                        Button(action: {
+                            onCopy()
+                            dismiss()
+                        }) {
+                            HStack {
+                                Image(systemName: "doc.on.doc")
+                                Text("Copiar")
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.blue)
+                            .foregroundColor(.white)
+                            .cornerRadius(8)
                         }
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.blue)
-                        .foregroundColor(.white)
-                        .cornerRadius(8)
+                        
+                        // Botón Visitar para URLs
+                        if item.type == .url, let url = URL(string: item.content) {
+                            Button(action: {
+                                openURL(url)
+                                dismiss()
+                            }) {
+                                HStack {
+                                    Image(systemName: "safari")
+                                    Text("Visitar")
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.green)
+                                .foregroundColor(.white)
+                                .cornerRadius(8)
+                            }
+                        }
+                        
+                        // Botón Abrir en Safari para PDFs
+                        if item.type == .pdf, let url = URL(string: item.content) {
+                            Button(action: {
+                                openURL(url)
+                                dismiss()
+                            }) {
+                                HStack {
+                                    Image(systemName: "safari")
+                                    Text("Abrir en Safari")
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.orange)
+                                .foregroundColor(.white)
+                                .cornerRadius(8)
+                            }
+                        }
                     }
                 }
                 .padding()
