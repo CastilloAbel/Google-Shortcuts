@@ -349,6 +349,10 @@ struct ClipboardDetailView: View {
             return "link"
         case .image:
             return "photo"
+        case .pdf:
+            return "doc.pdf"
+        case .file:
+            return "doc"
         case .unknown:
             return "questionmark.circle"
         }

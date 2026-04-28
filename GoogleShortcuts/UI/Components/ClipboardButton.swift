@@ -59,6 +59,10 @@ struct ClipboardButton: View {
             return "link.circle"
         case .image:
             return "photo.circle"
+        case .pdf:
+            return "doc.pdf.circle"
+        case .file:
+            return "doc.circle"
         case .unknown:
             return "questionmark.circle"
         }
