@@ -6,6 +6,7 @@ struct SettingsView: View {
     @AppStorage("notifyNewEmails") private var notifyNewEmails = true
     
     @State private var isAuthenticated = false
+    @State private var locationPermissionStatus = "⏸️ No determinado"
     
     var body: some View {
         NavigationView {
@@ -15,6 +16,9 @@ struct SettingsView: View {
                 
                 // MARK: - Polling Section
                 pollingSection
+                
+                // MARK: - Clipboard Section
+                clipboardSection
                 
                 // MARK: - Shortcuts Section
                 shortcutsSection
@@ -28,6 +32,7 @@ struct SettingsView: View {
             .navigationTitle("Ajustes")
             .onAppear {
                 isAuthenticated = (try? TokenStorage.shared.loadTokens()) != nil
+                locationPermissionStatus = PermissionManager.shared.getLocationPermissionStatus()
             }
         }
     }
@@ -79,6 +84,44 @@ struct SettingsView: View {
             }
             
             Toggle("Notificar nuevos correos", isOn: $notifyNewEmails)
+        }
+    }
+    
+    private var clipboardSection: some View {
+        Section("Portapapeles automático") {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text("Estado de ubicación")
+                    Spacer()
+                    Text(locationPermissionStatus)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                
+                Button(action: {
+                    PermissionManager.shared.requestLocationPermissionManually()
+                    // Actualizar estado después de un pequeño delay
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        locationPermissionStatus = PermissionManager.shared.getLocationPermissionStatus()
+                    }
+                }) {
+                    HStack {
+                        Image(systemName: "location.fill")
+                        Text("Habilitar ubicación en segundo plano")
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 8)
+                    .foregroundColor(.white)
+                    .background(Color.blue)
+                    .cornerRadius(8)
+                }
+                .buttonStyle(.plain)
+                
+                Text("La app necesita acceso a tu ubicación para mantener activo el monitoreo automático del portapapeles en segundo plano. Tu ubicación nunca se guarda ni se comparte.")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            .padding(.vertical, 4)
         }
     }
     

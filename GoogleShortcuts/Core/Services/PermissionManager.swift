@@ -54,6 +54,31 @@ final class PermissionManager: NSObject, ObservableObject, CLLocationManagerDele
         userDefaults.bool(forKey: permissionsKey)
     }
     
+    /// Método público para solicitar permiso de ubicación manualmente
+    func requestLocationPermissionManually() {
+        print("📍 Usuario solicitando permiso de ubicación desde Ajustes...")
+        requestLocationPermission()
+    }
+    
+    /// Verifica el estado actual del permiso de ubicación
+    func getLocationPermissionStatus() -> String {
+        let status = CLLocationManager.authorizationStatus()
+        switch status {
+        case .authorizedAlways:
+            return "✅ Siempre"
+        case .authorizedWhenInUse:
+            return "⏳ Cuando se usa"
+        case .denied:
+            return "❌ Denegado"
+        case .restricted:
+            return "🔒 Restringido"
+        case .notDetermined:
+            return "⏸️ No determinado"
+        @unknown default:
+            return "❓ Desconocido"
+        }
+    }
+    
     // MARK: - Solicitud de Notificaciones
     
     /// Solicita permisos para notificaciones (local only, no remotas)
