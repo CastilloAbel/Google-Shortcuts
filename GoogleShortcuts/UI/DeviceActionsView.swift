@@ -12,21 +12,21 @@ struct DeviceActionsView: View {
                     DeviceActionItem(
                         title: "Nivel de Batería",
                         description: "Obtiene el porcentaje actual de batería del dispositivo",
-                        icon: "battery.50percent",
+                        icon: "bolt.fill",
                         color: .yellow
                     )
                     
                     DeviceActionItem(
                         title: "¿Batería Baja?",
                         description: "Verifica si la batería está por debajo del 20%",
-                        icon: "battery.25percent",
+                        icon: "exclamationmark.triangle.fill",
                         color: .red
                     )
                     
                     DeviceActionItem(
                         title: "Modo Bajo Consumo",
                         description: "Verifica si el modo batería está activado",
-                        icon: "battery.25percent.circle",
+                        icon: "powersleep.fill",
                         color: .orange
                     )
                 }

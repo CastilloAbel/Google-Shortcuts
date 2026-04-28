@@ -147,9 +147,8 @@ class MailPollingService: ObservableObject {
     private func showLocalNotification(for emails: [Email]) async {
         let center = UNUserNotificationCenter.current()
         
-        // Solicitar permiso (solo la primera vez)
-        let granted = (try? await center.requestAuthorization(options: [.alert, .sound, .badge])) ?? false
-        guard granted else { return }
+        // No pedir permisos - dejar que el usuario lo configure en Settings
+        // Las notificaciones locales funcionan si el usuario las ha habilitado
         
         if emails.count == 1, let email = emails.first {
             // Notificación individual

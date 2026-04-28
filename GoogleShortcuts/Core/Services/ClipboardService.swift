@@ -132,12 +132,27 @@ final class ClipboardService: NSObject, ObservableObject {
             // Detectar tipo de contenido y agregar al histórico
             if let url = pasteboard.url {
                 addToHistory(url.absoluteString, type: .url)
-            } else if pasteboard.image != nil {
-                addToHistory("[Imagen copiada]", type: .image)
+            } else if let image = pasteboard.image {
+                // Convertir imagen a base64 para persistencia
+                if let imageData = image.jpegData(compressionQuality: 0.8) {
+                    let base64String = imageData.base64EncodedString()
+                    addToHistory(base64String, type: .image)
+                }
             } else if let text = pasteboard.string, !text.isEmpty {
                 addToHistory(text, type: .text)
             }
         }
+    }
+    
+    /// Obtiene una imagen de un item si es de tipo imagen
+    func getImage(from item: ClipboardItem) -> UIImage? {
+        guard item.type == .image else { return nil }
+        
+        if let data = Data(base64Encoded: item.content),
+           let image = UIImage(data: data) {
+            return image
+        }
+        return nil
     }
     
     // MARK: - History Management

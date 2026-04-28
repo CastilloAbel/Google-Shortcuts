@@ -78,44 +78,91 @@ struct ClipboardView: View {
     }
 }
 
-/// Fila individual para un item del portapapeles
+/// Fila individual para un item del portapapeles con soporte de imágenes
 struct ClipboardItemRow: View {
     let item: ClipboardItem
     let onCopy: () -> Void
     let onDelete: () -> Void
     
+    @StateObject private var clipboard = ClipboardService.shared
     @State private var showDetail = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                // Ícono según tipo
-                Image(systemName: typeIcon)
-                    .foregroundColor(typeColor)
-                    .frame(width: 20)
-                
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(item.displayText)
-                        .font(.body)
-                        .lineLimit(2)
+            // Si es una imagen, mostrar preview
+            if item.type == .image, let image = clipboard.getImage(from: item) {
+                ZStack(alignment: .topTrailing) {
+                    Image(uiImage: image)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(height: 150)
+                        .clipped()
+                        .cornerRadius(8)
                     
-                    Text(item.relativeTime)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    // Badge con fecha
+                    VStack(alignment: .trailing, spacing: 4) {
+                        Button(action: onDelete) {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.system(size: 22))
+                                .foregroundColor(.white)
+                                .shadow(radius: 2)
+                        }
+                        
+                        Text(item.relativeTime)
+                            .font(.caption2)
+                            .foregroundColor(.white)
+                            .shadow(radius: 2)
+                    }
+                    .padding(8)
                 }
                 
-                Spacer()
-                
-                // Botón copiar
-                Button(action: onCopy) {
-                    Image(systemName: "doc.on.doc")
-                        .foregroundColor(.blue)
+                HStack(spacing: 12) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Label("Imagen", systemImage: "photo.fill")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    Spacer()
+                    
+                    Button(action: onCopy) {
+                        Image(systemName: "doc.on.doc")
+                            .foregroundColor(.blue)
+                    }
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
-            }
-            .contentShape(Rectangle())
-            .onTapGesture {
-                showDetail = true
+                .padding(.horizontal, 8)
+            } else {
+                // Texto o URL - vista normal
+                HStack {
+                    // Ícono según tipo
+                    Image(systemName: typeIcon)
+                        .foregroundColor(typeColor)
+                        .frame(width: 20)
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(item.displayText)
+                            .font(.body)
+                            .lineLimit(2)
+                        
+                        Text(item.relativeTime)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    Spacer()
+                    
+                    // Botón copiar
+                    Button(action: onCopy) {
+                        Image(systemName: "doc.on.doc")
+                            .foregroundColor(.blue)
+                    }
+                    .buttonStyle(.plain)
+                }
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    showDetail = true
+                }
             }
         }
         .padding(.vertical, 8)
@@ -161,6 +208,7 @@ struct ClipboardDetailView: View {
     let item: ClipboardItem
     let onCopy: () -> Void
     @Environment(\.dismiss) var dismiss
+    @StateObject private var clipboard = ClipboardService.shared
     
     var body: some View {
         NavigationStack {
@@ -185,13 +233,21 @@ struct ClipboardDetailView: View {
                     .background(Color(.systemGray6))
                     .cornerRadius(8)
                     
-                    // Contenido
+                    // Contenido - mostrar imagen o texto según el tipo
                     ScrollView {
-                        Text(item.content)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding()
-                            .background(Color(.systemGray6))
-                            .cornerRadius(8)
+                        if item.type == .image, let image = clipboard.getImage(from: item) {
+                            Image(uiImage: image)
+                                .resizable()
+                                .scaledToFit()
+                                .cornerRadius(8)
+                                .frame(maxHeight: 300)
+                        } else {
+                            Text(item.content)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding()
+                                .background(Color(.systemGray6))
+                                .cornerRadius(8)
+                        }
                     }
                     
                     Spacer()
