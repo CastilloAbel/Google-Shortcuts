@@ -92,13 +92,12 @@ struct ClipboardItemRow: View {
     let onCopy: () -> Void
     let onDelete: () -> Void
     
-    @StateObject private var clipboard = ClipboardService.shared
     @State private var showDetail = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             // Si es una imagen, mostrar preview
-            if item.type == .image, let image = clipboard.getImage(from: item) {
+            if item.type == .image, let image = ClipboardService.shared.getImage(from: item) {
                 ZStack(alignment: .topTrailing) {
                     Image(uiImage: image)
                         .resizable()
@@ -216,7 +215,6 @@ struct ClipboardDetailView: View {
     let item: ClipboardItem
     let onCopy: () -> Void
     @Environment(\.dismiss) var dismiss
-    @StateObject private var clipboard = ClipboardService.shared
     
     var body: some View {
         NavigationStack {
@@ -243,7 +241,7 @@ struct ClipboardDetailView: View {
                     
                     // Contenido - mostrar imagen o texto según el tipo
                     ScrollView {
-                        if item.type == .image, let image = clipboard.getImage(from: item) {
+                        if item.type == .image, let image = ClipboardService.shared.getImage(from: item) {
                             Image(uiImage: image)
                                 .resizable()
                                 .scaledToFit()
