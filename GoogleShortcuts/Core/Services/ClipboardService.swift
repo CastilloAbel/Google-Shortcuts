@@ -93,9 +93,10 @@ final class ClipboardService: NSObject, ObservableObject {
         stopMonitoring()
     }
     
-    deinit {
-        stopMonitoring()
-        NotificationCenter.default.removeObserver(self)
+    nonisolated deinit {
+        DispatchQueue.main.async {
+            NotificationCenter.default.removeObserver(self)
+        }
     }
     
     // MARK: - Monitoring
@@ -112,7 +113,9 @@ final class ClipboardService: NSObject, ObservableObject {
         
         // Crear timer que monitorea cada 0.5 segundos
         monitoringTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
-            self?.checkClipboard()
+            Task { @MainActor in
+                self?.checkClipboard()
+            }
         }
         
         print("✅ Monitoreo iniciado")
