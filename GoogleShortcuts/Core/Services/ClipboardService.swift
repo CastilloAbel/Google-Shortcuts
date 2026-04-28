@@ -38,7 +38,8 @@ public struct ClipboardItem: Identifiable, Codable, Hashable, Sendable {
 }
 
 /// Servicio centralizado para gestionar el portapapeles
-/// Monitorea automáticamente los cambios en el portapapeles
+/// Ejecuta SOLO en MainActor para evitar problemas de concurrencia
+@MainActor
 final class ClipboardService: NSObject, ObservableObject {
     static let shared = ClipboardService()
     
@@ -50,10 +51,46 @@ final class ClipboardService: NSObject, ObservableObject {
     private let maxHistoryItems = 50
     private let userDefaultsKey = "clipboard_history"
     
-    private override init() {
+    nonisolated private override init() {
         super.init()
+    }
+    
+    // MARK: - Inicialización
+    
+    /// Inicializa el servicio (debe llamarse en MainActor)
+    func initializeService() {
+        print("📋 Inicializando ClipboardService...")
         loadHistory()
-        setupMonitoring()
+        startMonitoring()
+        registerBackgroundNotifications()
+    }
+    
+    nonisolated private func registerBackgroundNotifications() {
+        Task { @MainActor in
+            NotificationCenter.default.addObserver(
+                self,
+                selector: #selector(self.appDidEnterBackground),
+                name: UIApplication.didEnterBackgroundNotification,
+                object: nil
+            )
+            
+            NotificationCenter.default.addObserver(
+                self,
+                selector: #selector(self.appDidEnterForeground),
+                name: UIApplication.didBecomeActiveNotification,
+                object: nil
+            )
+        }
+    }
+    
+    @objc private func appDidEnterForeground() {
+        print("📱 App en foreground - reanudando monitoreo")
+        startMonitoring()
+    }
+    
+    @objc private func appDidEnterBackground() {
+        print("📱 App en background - pausando monitoreo")
+        stopMonitoring()
     }
     
     deinit {
@@ -61,71 +98,41 @@ final class ClipboardService: NSObject, ObservableObject {
         NotificationCenter.default.removeObserver(self)
     }
     
-    // MARK: - Monitoring Setup
+    // MARK: - Monitoring
     
-    /// Configura y inicia el monitoreo de portapapeles
-    private func setupMonitoring() {
-        // Iniciar monitoreo inmediatamente
-        startMonitoring()
+    /// Inicia el monitoreo del portapapeles
+    func startMonitoring() {
+        guard monitoringTimer == nil else {
+            print("⚠️ Monitoreo ya está activo")
+            return
+        }
         
-        // Pausar cuando la app entra en background
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(appDidEnterBackground),
-            name: UIApplication.didEnterBackgroundNotification,
-            object: nil
-        )
-        
-        // Reanudar cuando regresa a foreground
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(appDidEnterForeground),
-            name: UIApplication.didBecomeActiveNotification,
-            object: nil
-        )
-    }
-    
-    @objc private func appDidEnterForeground() {
-        print("📱 App en foreground - reanudando monitoreo de clipboard")
-        startMonitoring()
-    }
-    
-    @objc private func appDidEnterBackground() {
-        print("📱 App en background - pausando monitoreo de clipboard")
-        stopMonitoring()
-    }
-    
-    /// Inicia el monitoreo de cambios en el portapapeles
-    private func startMonitoring() {
-        guard monitoringTimer == nil else { return }
-        
-        // Inicializar estado actual
+        // Inicializar estado
         lastPasteboardChangeCount = UIPasteboard.general.changeCount
         
-        // Chequear cada 0.5 segundos
+        // Crear timer que monitorea cada 0.5 segundos
         monitoringTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
             self?.checkClipboard()
         }
         
-        print("✅ Monitoreo de clipboard INICIADO")
+        print("✅ Monitoreo iniciado")
     }
     
     /// Detiene el monitoreo
-    private func stopMonitoring() {
+    func stopMonitoring() {
         monitoringTimer?.invalidate()
         monitoringTimer = nil
-        print("⏸️ Monitoreo de clipboard PAUSADO")
+        print("⏸️ Monitoreo detenido")
     }
     
     /// Verifica si hay cambios en el portapapeles
     private func checkClipboard() {
         let pasteboard = UIPasteboard.general
         
-        // Si el changeCount cambió, hay contenido nuevo
         if pasteboard.changeCount != lastPasteboardChangeCount {
             lastPasteboardChangeCount = pasteboard.changeCount
             
-            // Prioridad: URL > Imagen > Texto
+            // Detectar tipo de contenido y agregar al histórico
             if let url = pasteboard.url {
                 addToHistory(url.absoluteString, type: .url)
             } else if pasteboard.image != nil {
@@ -138,70 +145,59 @@ final class ClipboardService: NSObject, ObservableObject {
     
     // MARK: - History Management
     
-    /// Agrega un item al histórico (thread-safe)
+    /// Agrega un item al histórico
     private func addToHistory(_ content: String, type: ClipboardItem.ContentType = .text) {
-        DispatchQueue.main.async {
-            // No agregar duplicados consecutivos
-            if self.history.first?.content == content {
-                return
-            }
-            
-            let item = ClipboardItem(content: content, type: type)
-            self.history.insert(item, at: 0)
-            
-            // Limitar a maxHistoryItems
-            if self.history.count > self.maxHistoryItems {
-                self.history.removeLast(self.history.count - self.maxHistoryItems)
-            }
-            
-            self.saveHistory()
-            self.currentContent = content
-            
-            print("📝 Item agregado al histórico: \(content.prefix(30))...")
+        // No agregar duplicados consecutivos
+        if history.first?.content == content {
+            return
         }
+        
+        let item = ClipboardItem(content: content, type: type)
+        history.insert(item, at: 0)
+        
+        // Limitar al máximo
+        if history.count > maxHistoryItems {
+            history.removeLast(history.count - maxHistoryItems)
+        }
+        
+        saveHistory()
+        currentContent = content
+        
+        print("✅ Agregado al histórico: \(content.prefix(30))...")
     }
     
-    /// Copia un item del histórico al portapapeles (thread-safe)
-    public func copyToClipboard(_ item: ClipboardItem) {
-        DispatchQueue.main.async {
-            UIPasteboard.general.string = item.content
-            self.currentContent = item.content
-            self.lastPasteboardChangeCount = UIPasteboard.general.changeCount
-            print("✅ Copiado al portapapeles: \(item.content.prefix(30))...")
-        }
+    /// Copia un item del histórico al portapapeles
+    func copyToClipboard(_ item: ClipboardItem) {
+        UIPasteboard.general.string = item.content
+        currentContent = item.content
+        lastPasteboardChangeCount = UIPasteboard.general.changeCount
+        print("✅ Copiado: \(item.content.prefix(30))...")
     }
     
-    /// Limpia el histórico completo (thread-safe)
-    public func clearHistory() {
-        DispatchQueue.main.async {
-            self.history.removeAll()
-            self.saveHistory()
-            print("🗑️ Histórico de portapapeles limpiado")
-        }
+    /// Limpia el histórico
+    func clearHistory() {
+        history.removeAll()
+        saveHistory()
+        print("🗑️ Histórico limpiado")
     }
     
-    /// Elimina un item específico del histórico (thread-safe)
-    public func removeItem(_ item: ClipboardItem) {
-        DispatchQueue.main.async {
-            self.history.removeAll { $0.id == item.id }
-            self.saveHistory()
-        }
+    /// Elimina un item específico
+    func removeItem(_ item: ClipboardItem) {
+        history.removeAll { $0.id == item.id }
+        saveHistory()
     }
     
     // MARK: - Persistence
     
-    /// Guarda el histórico en UserDefaults
     private func saveHistory() {
         do {
-            let dataToSave = Array(history.prefix(maxHistoryItems))
-            let data = try JSONEncoder().encode(dataToSave)
+            let data = try JSONEncoder().encode(Array(history.prefix(maxHistoryItems)))
             UserDefaults.standard.set(data, forKey: userDefaultsKey)
         } catch {
-            print("[Clipboard] Error guardando histórico: \(error)")
+            print("❌ Error guardando: \(error)")
         }
     }
     
-    /// Carga el histórico desde UserDefaults
     private func loadHistory() {
         guard let data = UserDefaults.standard.data(forKey: userDefaultsKey) else {
             history = []
@@ -211,8 +207,9 @@ final class ClipboardService: NSObject, ObservableObject {
         do {
             history = try JSONDecoder().decode([ClipboardItem].self, from: data)
             lastPasteboardChangeCount = UIPasteboard.general.changeCount
+            print("✅ Histórico cargado: \(history.count) items")
         } catch {
-            print("[Clipboard] Error cargando histórico: \(error)")
+            print("❌ Error cargando: \(error)")
             history = []
         }
     }

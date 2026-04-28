@@ -2,7 +2,7 @@ import SwiftUI
 
 /// Vista que muestra el histórico del portapapeles
 struct ClipboardView: View {
-    @ObservedObject var clipboardService = ClipboardService.shared
+    @StateObject var clipboardService = ClipboardService.shared
     @State private var showConfirmClear = false
     
     var body: some View {

@@ -44,6 +44,10 @@ struct ContentView: View {
             }
             .liquidGlassTabBar()
             .animation(.easeInOut, value: authManager.isAuthenticated)
+            .onAppear {
+                // Inicializar servicio de portapapeles
+                ClipboardService.shared.initializeService()
+            }
         }
     }
 }
