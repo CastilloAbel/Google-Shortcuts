@@ -26,7 +26,7 @@ struct DeviceActionsView: View {
                     DeviceActionItem(
                         title: "Modo Bajo Consumo",
                         description: "Verifica si el modo batería está activado",
-                        icon: "powersleep.fill",
+                        icon: "leaf.fill",
                         color: .orange
                     )
                 }

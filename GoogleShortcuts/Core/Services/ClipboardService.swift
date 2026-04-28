@@ -104,6 +104,7 @@ final class ClipboardService: NSObject, ObservableObject {
         
         // Inicializar estado
         lastPasteboardChangeCount = UIPasteboard.general.changeCount
+        print("📊 ChangeCount inicial: \(lastPasteboardChangeCount)")
         
         // Crear timer que monitorea cada 0.5 segundos
         monitoringTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
@@ -112,7 +113,8 @@ final class ClipboardService: NSObject, ObservableObject {
             }
         }
         
-        print("✅ Monitoreo iniciado")
+        print("✅ Monitoreo iniciado - Timer activo")
+    }
     }
     
     /// Detiene el monitoreo
@@ -125,21 +127,28 @@ final class ClipboardService: NSObject, ObservableObject {
     /// Verifica si hay cambios en el portapapeles
     private func checkClipboard() {
         let pasteboard = UIPasteboard.general
+        let currentChangeCount = pasteboard.changeCount
         
-        if pasteboard.changeCount != lastPasteboardChangeCount {
-            lastPasteboardChangeCount = pasteboard.changeCount
+        if currentChangeCount != lastPasteboardChangeCount {
+            print("📍 Cambio detectado: \(lastPasteboardChangeCount) → \(currentChangeCount)")
+            lastPasteboardChangeCount = currentChangeCount
             
             // Detectar tipo de contenido y agregar al histórico
             if let url = pasteboard.url {
+                print("🔗 URL detectada")
                 addToHistory(url.absoluteString, type: .url)
             } else if let image = pasteboard.image {
+                print("🖼️ Imagen detectada")
                 // Convertir imagen a base64 para persistencia
                 if let imageData = image.jpegData(compressionQuality: 0.8) {
                     let base64String = imageData.base64EncodedString()
                     addToHistory(base64String, type: .image)
                 }
             } else if let text = pasteboard.string, !text.isEmpty {
+                print("📝 Texto detectado: \(text.prefix(50))")
                 addToHistory(text, type: .text)
+            } else {
+                print("⚠️ Sin contenido reconocible")
             }
         }
     }
@@ -153,6 +162,31 @@ final class ClipboardService: NSObject, ObservableObject {
             return image
         }
         return nil
+    }
+    
+    /// Captura manualmente el contenido actual del portapapeles
+    /// (para el botón Refresh en la UI)
+    func captureCurrentClipboard() {
+        print("📋 Capturando contenido actual del portapapeles...")
+        let pasteboard = UIPasteboard.general
+        
+        // Detectar tipo de contenido y agregar al histórico
+        if let url = pasteboard.url {
+            addToHistory(url.absoluteString, type: .url)
+        } else if let image = pasteboard.image {
+            // Convertir imagen a base64 para persistencia
+            if let imageData = image.jpegData(compressionQuality: 0.8) {
+                let base64String = imageData.base64EncodedString()
+                addToHistory(base64String, type: .image)
+            }
+        } else if let text = pasteboard.string, !text.isEmpty {
+            addToHistory(text, type: .text)
+        } else {
+            print("⚠️ No hay contenido en el portapapeles")
+        }
+        
+        // Actualizar changeCount para evitar duplicados
+        lastPasteboardChangeCount = pasteboard.changeCount
     }
     
     // MARK: - History Management

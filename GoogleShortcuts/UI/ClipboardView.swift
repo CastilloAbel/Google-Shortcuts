@@ -15,6 +15,14 @@ struct ClipboardView: View {
                 
                 Spacer()
                 
+                // Botón refresh (capturar del portapapeles)
+                Button(action: {
+                    clipboardService.captureCurrentClipboard()
+                }) {
+                    Image(systemName: "arrow.clockwise")
+                        .foregroundColor(.blue)
+                }
+                
                 // Botón limpiar histórico
                 if !clipboardService.history.isEmpty {
                     Button(action: { showConfirmClear = true }) {
