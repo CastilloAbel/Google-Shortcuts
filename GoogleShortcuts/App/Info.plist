@@ -75,9 +75,9 @@
     <array>
         <string>location</string>
         <!-- Background fetch: sin costo -->
-        <string>fetch</string>
+        <!-- <string>fetch</string> -->
         <!-- Clipboard monitoring en background -->
-        <string>processing</string>
+        <!-- <string>processing</string> -->
 
     </array>
     
@@ -120,7 +120,7 @@
      -->
     <!-- iOS 10 compatibility -->
     <key>NSLocationAlwaysUsageDescription</key>
-    <true/>
+    <string>Usamos tu ubicación ...</string>
     <string>Usamos tu ubicación para mantener el monitoreo del portapapeles activo en segundo plano. Tu ubicación nunca se comparte ni se guarda.</string>
     
     <key>NSAppTransportSecurity</key>
