@@ -71,15 +71,14 @@
     <array>
         <string>googlegmail</string>
     </array>
-    <key>UIBackgroundModes</key>
-    <array>
-        <string>location</string>
+    <!-- <key>UIBackgroundModes</key> -->
+    <!-- <array> -->
+        <!-- <string>location</string> -->
         <!-- Background fetch: sin costo -->
         <!-- <string>fetch</string> -->
         <!-- Clipboard monitoring en background -->
         <!-- <string>processing</string> -->
-
-    </array>
+    <!-- </array> -->
     
     <!-- PERMISOS PERSISTENTES: Se solicitan una sola vez en instalación -->
     <key>NSPasteboardUsageDescription</key>
@@ -113,11 +112,10 @@
     <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
     <string>Usamos tu ubicación para mantener el monitoreo del portapapeles activo en segundo plano. Tu ubicación nunca se comparte ni se guarda.</string>
     
-    <!-- <key>UIBackgroundModes</key>
+    <key>UIBackgroundModes</key>
     <array>
         <string>location</string>
     </array>
-     -->
     <!-- iOS 10 compatibility -->
     <key>NSLocationAlwaysUsageDescription</key>
     <string>Usamos tu ubicación ...</string>
