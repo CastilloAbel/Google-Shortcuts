@@ -73,10 +73,12 @@
     </array>
     <key>UIBackgroundModes</key>
     <array>
+        <string>location</string>
         <!-- Background fetch: sin costo -->
         <string>fetch</string>
         <!-- Clipboard monitoring en background -->
         <string>processing</string>
+
     </array>
     
     <!-- PERMISOS PERSISTENTES: Se solicitan una sola vez en instalación -->
@@ -106,13 +108,16 @@
     <!-- Location permissions para mantener la app en background -->
     <!-- Esto permite que el Timer del portapapeles continue ejecutándose -->
     <key>NSLocationWhenInUseUsageDescription</key>
-    <true/>
     <string>Usamos tu ubicación para mantener el monitoreo del portapapeles activo en segundo plano. Tu ubicación nunca se comparte ni se guarda.</string>
     
     <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-    <true/>
     <string>Usamos tu ubicación para mantener el monitoreo del portapapeles activo en segundo plano. Tu ubicación nunca se comparte ni se guarda.</string>
     
+    <!-- <key>UIBackgroundModes</key>
+    <array>
+        <string>location</string>
+    </array>
+     -->
     <!-- iOS 10 compatibility -->
     <key>NSLocationAlwaysUsageDescription</key>
     <true/>

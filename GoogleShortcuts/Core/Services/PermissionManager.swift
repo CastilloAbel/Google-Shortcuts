@@ -207,7 +207,8 @@ final class PermissionManager: NSObject, ObservableObject, CLLocationManagerDele
             // Configurar el location manager para empezar a detectar ubicación
             self.locationManager.desiredAccuracy = kCLLocationAccuracyReduced
             self.locationManager.distanceFilter = kCLDistanceFilterNone
-            
+            self.locationManager.requestWhenInUseAuthorization()
+
             self.locationManager.requestAlwaysAuthorization()
             print("📍 ✅ Llamada a requestAlwaysAuthorization() ejecutada")
             
