@@ -60,11 +60,44 @@ final class PermissionManager: NSObject, ObservableObject, CLLocationManagerDele
     }
     
     /// Método público para solicitar permiso de ubicación manualmente
+    /// Esta versión es más agresiva: intenta obtener ubicación inmediatamente
     func requestLocationPermissionManually() {
         print("📍 Usuario solicitando permiso de ubicación desde Ajustes...")
         print("📍 Estado actual: \(getLocationPermissionStatus())")
-        DispatchQueue.main.async {
-            self.requestLocationPermission()
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let status = self.locationManager.authorizationStatus
+            
+            // Si aún no se ha decidido, solicitar inmediatamente
+            if status == .notDetermined {
+                print("📍 [Manual] Estado .notDetermined - Solicitando When in Use...")
+                
+                // Iniciar actualizaciones ANTES de solicitar (esto fuerza el popup)
+                self.locationManager.startUpdatingLocation()
+                print("📍 [Manual] ✅ startUpdatingLocation() iniciado")
+                
+                // Luego solicitar el permiso
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    self.locationManager.requestWhenInUseAuthorization()
+                    print("📍 [Manual] ✅ requestWhenInUseAuthorization() ejecutado")
+                }
+            }
+            // Si ya tiene "When in Use", solicitar upgrade a Always
+            else if status == .authorizedWhenInUse {
+                print("📍 [Manual] Estado .authorizedWhenInUse - Solicitando Always...")
+                self.locationManager.requestAlwaysAuthorization()
+                print("📍 [Manual] ✅ requestAlwaysAuthorization() ejecutado")
+            }
+            // Si ya tiene Always, no hacer nada
+            else if status == .authorizedAlways {
+                print("✅ [Manual] Ya tiene permiso Always")
+            }
+            // Si fue denegado, no se puede hacer nada desde aquí
+            else if status == .denied || status == .restricted {
+                print("⚠️ [Manual] Permiso denegado o restringido")
+            }
         }
     }
     
@@ -123,6 +156,7 @@ final class PermissionManager: NSObject, ObservableObject, CLLocationManagerDele
     // MARK: - Solicitud de Ubicación
     
     /// Solicita permisos de ubicación mediante proceso simple y directo
+    /// Intenta obtener ubicación inmediatamente para forzar el popup de iOS
     private func requestLocationPermission() {
         let status = locationManager.authorizationStatus
         print("📍 Estado actual de ubicación: \(status.rawValue)")
@@ -135,12 +169,34 @@ final class PermissionManager: NSObject, ObservableObject, CLLocationManagerDele
             // Solo solicitar si aún no se ha decidido
             if status == .notDetermined {
                 print("📍 Estado .notDetermined - Solicitando When in Use...")
-                self.locationManager.requestWhenInUseAuthorization()
+                print("📍 Iniciando startUpdatingLocation para forzar popup...")
+                
+                // Iniciar actualizaciones PRIMERO (esto fuerza el popup)
+                self.locationManager.startUpdatingLocation()
+                print("📍 ✅ startUpdatingLocation() iniciado")
+                
+                // Luego solicitar permiso
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                    self.locationManager.requestWhenInUseAuthorization()
+                    print("📍 ✅ requestWhenInUseAuthorization() ejecutado")
+                }
+                
             } else if status == .authorizedWhenInUse {
-                print("📍 Estado .authorizedWhenInUse - Solicitando Always...")
-                self.locationManager.requestAlwaysAuthorization()
+                print("📍 Estado .authorizedWhenInUse - Iniciando ubicación...")
+                self.locationManager.startUpdatingLocation()
+                print("📍 ✅ startUpdatingLocation() para when in use")
+                
+                // Solicitar upgrade a Always
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    self.locationManager.requestAlwaysAuthorization()
+                    print("📍 Solicitando upgrade a Always...")
+                }
+                
             } else if status == .authorizedAlways {
-                print("✅ Estado .authorizedAlways - Listo!")
+                print("✅ Estado .authorizedAlways - Iniciando ubicación para background...")
+                self.locationManager.startUpdatingLocation()
+                print("📍 ✅ startUpdatingLocation() para background")
+                
             } else if status == .denied || status == .restricted {
                 print("⚠️ Estado .denied/.restricted - El usuario debe habilitar en Settings")
             }
@@ -189,20 +245,48 @@ final class PermissionManager: NSObject, ObservableObject, CLLocationManagerDele
             switch status {
             case .authorizedAlways:
                 print("✅ [DELEGATE] Permiso de ubicación: Always (Background monitoring totalmente activo)")
+                // Iniciar actualizaciones para background monitoring
+                self.locationManager.startUpdatingLocation()
+                print("📍 [DELEGATE] startUpdatingLocation() iniciado para background")
+                
             case .authorizedWhenInUse:
-                print("⏳ [DELEGATE] Permiso de ubicación: When in Use (Solicitando upgrade...)")
-                self.requestLocationUpgrade()
+                print("⏳ [DELEGATE] Permiso de ubicación: When in Use")
+                // Iniciar actualizaciones para Current Usage
+                self.locationManager.startUpdatingLocation()
+                print("📍 [DELEGATE] startUpdatingLocation() iniciado para when in use")
+                
+                // Solicitar upgrade a Always después de un pequeño delay
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    print("⏳ [DELEGATE] Solicitando upgrade a Always...")
+                    self.requestLocationUpgrade()
+                }
+                
             case .denied, .restricted:
                 print("❌ [DELEGATE] Permiso de ubicación denegado")
+                // Detener actualizaciones
+                self.locationManager.stopUpdatingLocation()
+                
             case .notDetermined:
                 print("⏳ [DELEGATE] Permiso de ubicación: Pendiente")
+                
             @unknown default:
                 break
             }
         }
     }
     
-    // MARK: - Marcado de Permisos
+    /// Se llama cuando Location Manager obtiene ubicaciones
+    nonisolated func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        print("📍 [DELEGATE] didUpdateLocations: \(locations.count) ubicación(es) recibida(s)")
+        if let lastLocation = locations.last {
+            print("📍 [DELEGATE] Lat: \(lastLocation.coordinate.latitude), Lon: \(lastLocation.coordinate.longitude)")
+        }
+    }
+    
+    /// Se llama cuando Location Manager falla
+    nonisolated func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        print("❌ [DELEGATE] didFailWithError: \(error.localizedDescription)")
+    }
     
     /// Marca que los permisos ya fueron solicitados (sincrónico y seguro)
     private func markPermissionsRequested() {
