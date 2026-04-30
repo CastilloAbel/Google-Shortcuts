@@ -8,6 +8,7 @@ struct SettingsView: View {
     @State private var isAuthenticated = false
     @State private var locationPermissionStatus = "⏸️ No determinado"
     @State private var isRequestingLocation = false
+    @StateObject private var locationTracker = LocationTracker()
     
     var body: some View {
         NavigationView {
@@ -95,71 +96,124 @@ struct SettingsView: View {
     }
     
     private var clipboardSection: some View {
-        Section("Portapapeles automático") {
+        Section("Portapapeles automático + Test de Ubicación") {
             VStack(alignment: .leading, spacing: 12) {
+                // MARK: - Estado de ubicación general
                 HStack {
-                    Text("Estado de ubicación")
+                    Text("Estado de permisos")
                     Spacer()
-                    if isRequestingLocation {
-                        HStack(spacing: 4) {
-                            ProgressView()
-                                .scaleEffect(0.8)
-                            Text("Solicitando...")
-                        }
+                    Text(locationPermissionStatus)
                         .font(.caption)
-                        .foregroundColor(.blue)
-                    } else {
-                        Text(locationPermissionStatus)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                }
-                
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("⚠️ Ubicación requerida para portapapeles automático en segundo plano")
-                        .font(.caption)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.orange)
-                    
-                    Text("iOS necesita permiso de ubicación 'Always' para mantener la app activa en background y detectar cambios en el portapapeles. Tu ubicación NUNCA se guarda ni se comparte.")
-                        .font(.caption2)
                         .foregroundColor(.secondary)
                 }
                 
-                VStack(spacing: 8) {
-                    // Opción 1: Automática (puede no funcionar)
-                    if !isRequestingLocation && locationPermissionStatus != "✅ Siempre" {
-                        Button(action: {
-                            isRequestingLocation = true
-                            print("🔔 [SettingsView] Usuario solicita ubicación automática")
+                // MARK: - Test en vivo de ubicación
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(spacing: 12) {
+                        Image(systemName: "location.circle.fill")
+                            .font(.title3)
+                            .foregroundColor(locationTracker.location != nil ? .green : .gray)
+                        
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Test de ubicación")
+                                .font(.caption)
+                                .fontWeight(.bold)
                             
-                            PermissionManager.shared.requestLocationPermissionManually()
-                            
-                            // Actualizar estado después de delay
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                                locationPermissionStatus = PermissionManager.shared.getLocationPermissionStatus()
-                                isRequestingLocation = false
+                            Text(locationTracker.statusMessage)
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        Spacer()
+                        
+                        if locationTracker.isUpdating {
+                            ProgressView()
+                                .scaleEffect(0.8)
+                        }
+                    }
+                    .padding(8)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(6)
+                    
+                    // Mostrar coordenadas si hay ubicación
+                    if let location = locationTracker.location {
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack {
+                                Text("Latitud")
+                                    .font(.caption)
+                                Spacer()
+                                Text(String(format: "%.4f", location.latitude))
+                                    .font(.caption)
+                                    .monospaced()
                             }
+                            
+                            HStack {
+                                Text("Longitud")
+                                    .font(.caption)
+                                Spacer()
+                                Text(String(format: "%.4f", location.longitude))
+                                    .font(.caption)
+                                    .monospaced()
+                            }
+                            
+                            HStack {
+                                Text("Precisión")
+                                    .font(.caption)
+                                Spacer()
+                                Text(String(format: "%.0fm", locationTracker.accuracy))
+                                    .font(.caption)
+                            }
+                        }
+                        .padding(8)
+                        .background(Color.green.opacity(0.1))
+                        .cornerRadius(6)
+                    } else {
+                        Text("Sin ubicación recibida aún")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                            .padding(8)
+                    }
+                }
+                
+                // MARK: - Botones de acción
+                VStack(spacing: 8) {
+                    Button(action: {
+                        locationTracker.startTracking()
+                    }) {
+                        HStack {
+                            Image(systemName: "location.fill")
+                            Text("Probar obtener ubicación")
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .foregroundColor(.white)
+                        .background(Color.blue)
+                        .cornerRadius(8)
+                    }
+                    .buttonStyle(.plain)
+                    
+                    if locationTracker.isUpdating {
+                        Button(action: {
+                            locationTracker.stopTracking()
                         }) {
                             HStack {
-                                Image(systemName: "location.fill")
-                                Text("Solicitar permiso...")
+                                Image(systemName: "stop.circle.fill")
+                                Text("Detener")
                             }
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 10)
                             .foregroundColor(.white)
-                            .background(Color.blue)
+                            .background(Color.red)
                             .cornerRadius(8)
                         }
                         .buttonStyle(.plain)
                     }
                     
-                    // Opción 2: Manual (siempre funciona)
                     if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
                         Link(destination: settingsURL) {
                             HStack {
                                 Image(systemName: "gear")
-                                Text("Ir a Ajustes de la app")
+                                Text("⚙️ Ajustes de la app")
                             }
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 10)
@@ -170,24 +224,25 @@ struct SettingsView: View {
                     }
                 }
                 
+                // MARK: - Información
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("📍 Pasos manuales (si lo automático no funciona):")
+                    Text("❓ ¿Cómo funciona?")
                         .font(.caption)
                         .fontWeight(.semibold)
                     
-                    Text("1. Abre Ajustes > Google Shortcuts")
+                    Text("1️⃣ Toca 'Probar obtener ubicación'")
                         .font(.caption2)
                         .foregroundColor(.secondary)
                     
-                    Text("2. Ve a Ubicación")
+                    Text("2️⃣ Debería aparecer un popup pidiendo permisos")
                         .font(.caption2)
                         .foregroundColor(.secondary)
                     
-                    Text("3. Selecciona 'Always' (en vez de 'When I Share')")
+                    Text("3️⃣ Si funciona, verás coordenadas abajo ✅")
                         .font(.caption2)
                         .foregroundColor(.secondary)
                     
-                    Text("4. Regresa a la app (el estado se actualiza solo)")
+                    Text("4️⃣ Si no funciona, ve a Ajustes > Ubicación > 'Always'")
                         .font(.caption2)
                         .foregroundColor(.secondary)
                 }
