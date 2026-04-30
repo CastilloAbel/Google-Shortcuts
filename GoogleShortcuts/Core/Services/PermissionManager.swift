@@ -27,9 +27,8 @@ final class PermissionManager: NSObject, ObservableObject, CLLocationManagerDele
         self.locationManager.desiredAccuracy = kCLLocationAccuracyThreeKilometers
         self.locationManager.distanceFilter = 1000  // 1km de cambio
         self.locationManager.pausesLocationUpdatesAutomatically = false
-        self.locationManager.allowsBackgroundLocationUpdates = true
         
-        print("✅ PermissionManager inicializado con CLLocationManager (Battey efficient)")
+        print("✅ PermissionManager inicializado con CLLocationManager (Battery efficient)")
     }
     
     // MARK: - Métodos Públicos
