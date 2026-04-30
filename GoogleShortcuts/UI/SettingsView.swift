@@ -6,9 +6,6 @@ struct SettingsView: View {
     @AppStorage("notifyNewEmails") private var notifyNewEmails = true
     
     @State private var isAuthenticated = false
-    @State private var locationPermissionStatus = "⏸️ No determinado"
-    @State private var isRequestingLocation = false
-    @StateObject private var locationTracker = LocationTracker()
     
     var body: some View {
         NavigationView {
@@ -34,13 +31,6 @@ struct SettingsView: View {
             .navigationTitle("Ajustes")
             .onAppear {
                 isAuthenticated = (try? TokenStorage.shared.loadTokens()) != nil
-                locationPermissionStatus = PermissionManager.shared.getLocationPermissionStatus()
-            }
-            .onDisappear {
-                // Refrescar estado cuando regresa de Ajustes del sistema
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    locationPermissionStatus = PermissionManager.shared.getLocationPermissionStatus()
-                }
             }
         }
     }
@@ -96,153 +86,47 @@ struct SettingsView: View {
     }
     
     private var clipboardSection: some View {
-        Section("Portapapeles automático + Test de Ubicación") {
-            VStack(alignment: .leading, spacing: 12) {
-                // MARK: - Estado de ubicación general
+        Section("Portapapeles automático") {
+            VStack(alignment: .leading, spacing: 8) {
                 HStack {
-                    Text("Estado de permisos")
-                    Spacer()
-                    Text(locationPermissionStatus)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                
-                // MARK: - Test en vivo de ubicación
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack(spacing: 12) {
-                        Image(systemName: "location.circle.fill")
-                            .font(.title3)
-                            .foregroundColor(locationTracker.location != nil ? .green : .gray)
-                        
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Test de ubicación")
-                                .font(.caption)
-                                .fontWeight(.bold)
-                            
-                            Text(locationTracker.statusMessage)
-                                .font(.caption2)
-                                .foregroundColor(.secondary)
-                        }
-                        
-                        Spacer()
-                        
-                        if locationTracker.isUpdating {
-                            ProgressView()
-                                .scaleEffect(0.8)
-                        }
-                    }
-                    .padding(8)
-                    .background(Color(.systemGray6))
-                    .cornerRadius(6)
+                    Image(systemName: "doc.on.clipboard")
+                        .font(.title3)
+                        .foregroundColor(.blue)
                     
-                    // Mostrar coordenadas si hay ubicación
-                    if let location = locationTracker.location {
-                        VStack(alignment: .leading, spacing: 4) {
-                            HStack {
-                                Text("Latitud")
-                                    .font(.caption)
-                                Spacer()
-                                Text(String(format: "%.4f", location.latitude))
-                                    .font(.caption)
-                                    .monospaced()
-                            }
-                            
-                            HStack {
-                                Text("Longitud")
-                                    .font(.caption)
-                                Spacer()
-                                Text(String(format: "%.4f", location.longitude))
-                                    .font(.caption)
-                                    .monospaced()
-                            }
-                            
-                            HStack {
-                                Text("Precisión")
-                                    .font(.caption)
-                                Spacer()
-                                Text(String(format: "%.0fm", locationTracker.accuracy))
-                                    .font(.caption)
-                            }
-                        }
-                        .padding(8)
-                        .background(Color.green.opacity(0.1))
-                        .cornerRadius(6)
-                    } else {
-                        Text("Sin ubicación recibida aún")
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Background App Refresh")
+                            .font(.caption)
+                            .fontWeight(.bold)
+                        
+                        Text("Se ejecuta cada 15-45 minutos")
                             .font(.caption2)
                             .foregroundColor(.secondary)
-                            .padding(8)
-                    }
-                }
-                
-                // MARK: - Botones de acción
-                VStack(spacing: 8) {
-                    Button(action: {
-                        locationTracker.startTracking()
-                    }) {
-                        HStack {
-                            Image(systemName: "location.fill")
-                            Text("Probar obtener ubicación")
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 10)
-                        .foregroundColor(.white)
-                        .background(Color.blue)
-                        .cornerRadius(8)
-                    }
-                    .buttonStyle(.plain)
-                    
-                    if locationTracker.isUpdating {
-                        Button(action: {
-                            locationTracker.stopTracking()
-                        }) {
-                            HStack {
-                                Image(systemName: "stop.circle.fill")
-                                Text("Detener")
-                            }
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 10)
-                            .foregroundColor(.white)
-                            .background(Color.red)
-                            .cornerRadius(8)
-                        }
-                        .buttonStyle(.plain)
                     }
                     
-                    if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
-                        Link(destination: settingsURL) {
-                            HStack {
-                                Image(systemName: "gear")
-                                Text("⚙️ Ajustes de la app")
-                            }
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 10)
-                            .foregroundColor(.white)
-                            .background(Color.green)
-                            .cornerRadius(8)
-                        }
-                    }
+                    Spacer()
                 }
+                .padding(8)
+                .background(Color(.systemGray6))
+                .cornerRadius(6)
                 
-                // MARK: - Información
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("❓ ¿Cómo funciona?")
+                    Text("📋 ¿Cómo funciona?")
                         .font(.caption)
                         .fontWeight(.semibold)
                     
-                    Text("1️⃣ Toca 'Probar obtener ubicación'")
+                    Text("✅ Mientras la app está abierta: monitoreo en tiempo real")
                         .font(.caption2)
                         .foregroundColor(.secondary)
                     
-                    Text("2️⃣ Debería aparecer un popup pidiendo permisos")
+                    Text("⏱️ Cuando está en background: cada 15-45 minutos (según uso)")
                         .font(.caption2)
                         .foregroundColor(.secondary)
                     
-                    Text("3️⃣ Si funciona, verás coordenadas abajo ✅")
+                    Text("💾 Todos los items se guardan automáticamente")
                         .font(.caption2)
                         .foregroundColor(.secondary)
                     
-                    Text("4️⃣ Si no funciona, ve a Ajustes > Ubicación > 'Always'")
+                    Text("🔔 Las nuevas URLs/imágenes aparecen en la pestaña Portapapeles")
                         .font(.caption2)
                         .foregroundColor(.secondary)
                 }

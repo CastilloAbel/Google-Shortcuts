@@ -1,4 +1,5 @@
 import SwiftUI
+import BackgroundTasks
 
 /// Entry point de la aplicación.
 /// Configurado para iOS 16+ con App Intents (no requiere cuenta paga).
@@ -65,17 +66,87 @@ struct GoogleShortcutsApp: App {
     }
 }
 
-// MARK: - App Delegate
+// MARK: - App Delegate con Background App Refresh
 
 class AppDelegate: UIResponder, UIApplicationDelegate {
+    
+    static let clipboardRefreshTaskID = "com.abel.shortcuts.clipboard-refresh"
     
     func application(
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
-        // App inicializada - ClipboardService se inicia automáticamente
         print("✅ App inicializada")
+        
+        // Registrar Background App Refresh task
+        registerBackgroundAppRefresh()
+        
         return true
+    }
+    
+    // MARK: - Background App Refresh
+    
+    private func registerBackgroundAppRefresh() {
+        if #available(iOS 13.0, *) {
+            BGTaskScheduler.shared.register(
+                forTaskWithIdentifier: Self.clipboardRefreshTaskID,
+                using: nil
+            ) { [weak self] task in
+                self?.handleClipboardRefreshTask(task: task as! BGProcessingTask)
+            }
+            print("📋 [Background] Registrado task de Clipboard Refresh")
+        }
+    }
+    
+    private func handleClipboardRefreshTask(task: BGProcessingTask) {
+        print("📋 [Background] Ejecutando Clipboard Refresh task...")
+        
+        // Agendar la siguiente tarea inmediatamente
+        scheduleNextClipboardRefresh()
+        
+        // Obtener el servicio de clipboard
+        let clipboardService = ClipboardService.shared
+        
+        // Ejecutar chequeo en main thread
+        Task { @MainActor in
+            // Revisar portapapeles
+            clipboardService.checkClipboard()
+            print("📋 [Background] Chequeo completado")
+            
+            // Marcar task como completada con éxito
+            task.setTaskCompleted(success: true)
+        }
+        
+        // Timeout: marcar como completada después de 30s (límite de iOS)
+        let deadline = DispatchTime.now() + .seconds(30)
+        DispatchQueue.global().asyncAfter(deadline: deadline) {
+            if !Task.isCancelled {
+                task.setTaskCompleted(success: false)
+            }
+        }
+    }
+    
+    /// Programa la siguiente ejecución de Background Refresh
+    /// iOS ejecuta más frecuentemente si detecta uso frecuente de la app
+    static func scheduleClipboardRefresh() {
+        if #available(iOS 13.0, *) {
+            let request = BGProcessingTaskRequest(identifier: clipboardRefreshTaskID)
+            
+            // Configurar requisitos mínimos
+            request.requiresNetworkConnectivity = false  // No necesita red
+            request.requiresExternalPower = false        // Puede ejecutar con batería
+            
+            do {
+                try BGTaskScheduler.shared.submit(request)
+                print("📋 [Background] Siguiente refresh programado (15-45 min)")
+            } catch {
+                print("❌ [Background] Error al programar refresh: \(error)")
+            }
+        }
+    }
+    
+    private func scheduleNextClipboardRefresh() {
+        Self.scheduleClipboardRefresh()
     }
 }
 
