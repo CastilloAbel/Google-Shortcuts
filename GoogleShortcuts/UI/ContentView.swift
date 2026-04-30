@@ -45,7 +45,8 @@ struct ContentView: View {
             .liquidGlassTabBar()
             .animation(.easeInOut, value: authManager.isAuthenticated)
             .onAppear {
-                // Solicitar permisos necesarios (una sola vez)
+                // Solicitar únicamente permiso de ubicación (para portapapeles automático)
+                // Las notificaciones se pueden agregar después si son necesarias
                 PermissionManager.shared.requestAllPermissions()
                 // Inicializar servicio de portapapeles
                 ClipboardService.shared.initializeService()

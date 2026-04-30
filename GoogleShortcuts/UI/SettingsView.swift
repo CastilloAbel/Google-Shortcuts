@@ -115,56 +115,81 @@ struct SettingsView: View {
                     }
                 }
                 
-                if !isRequestingLocation {
-                    Button(action: {
-                        isRequestingLocation = true
-                        print("🔔 [SettingsView] Usuario tocó el botón de ubicación")
-                        
-                        PermissionManager.shared.requestLocationPermissionManually()
-                        
-                        // Actualizar estado después de delays progresivos
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                            locationPermissionStatus = PermissionManager.shared.getLocationPermissionStatus()
-                            print("🔔 [SettingsView] Estado actualizado: \(locationPermissionStatus)")
-                        }
-                        
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                            isRequestingLocation = false
-                        }
-                    }) {
-                        HStack {
-                            Image(systemName: "location.fill")
-                            Text("Habilitar ubicación en segundo plano")
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 8)
-                        .foregroundColor(.white)
-                        .background(Color.blue)
-                        .cornerRadius(8)
-                    }
-                    .buttonStyle(.plain)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("⚠️ Ubicación requerida para portapapeles automático en segundo plano")
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.orange)
+                    
+                    Text("iOS necesita permiso de ubicación 'Always' para mantener la app activa en background y detectar cambios en el portapapeles. Tu ubicación NUNCA se guarda ni se comparte.")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
                 }
                 
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("¿Por qué es necesario?")
+                VStack(spacing: 8) {
+                    // Opción 1: Automática (puede no funcionar)
+                    if !isRequestingLocation && locationPermissionStatus != "✅ Siempre" {
+                        Button(action: {
+                            isRequestingLocation = true
+                            print("🔔 [SettingsView] Usuario solicita ubicación automática")
+                            
+                            PermissionManager.shared.requestLocationPermissionManually()
+                            
+                            // Actualizar estado después de delay
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                                locationPermissionStatus = PermissionManager.shared.getLocationPermissionStatus()
+                                isRequestingLocation = false
+                            }
+                        }) {
+                            HStack {
+                                Image(systemName: "location.fill")
+                                Text("Solicitar permiso...")
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 10)
+                            .foregroundColor(.white)
+                            .background(Color.blue)
+                            .cornerRadius(8)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    
+                    // Opción 2: Manual (siempre funciona)
+                    if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
+                        Link(destination: settingsURL) {
+                            HStack {
+                                Image(systemName: "gear")
+                                Text("Ir a Ajustes de la app")
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 10)
+                            .foregroundColor(.white)
+                            .background(Color.green)
+                            .cornerRadius(8)
+                        }
+                    }
+                }
+                
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("📍 Pasos manuales (si lo automático no funciona):")
                         .font(.caption)
                         .fontWeight(.semibold)
                     
-                    Text("La app necesita acceso a tu ubicación para mantener activo el monitoreo automático del portapapeles en segundo plano. Tu ubicación nunca se guarda ni se comparte.")
-                        .font(.caption)
+                    Text("1. Abre Ajustes > Google Shortcuts")
+                        .font(.caption2)
                         .foregroundColor(.secondary)
                     
-                    Text("\n📌 Si no aparece el popup: Ve a Ajustes del sistema > Google Shortcuts > Ubicación > Selecciona 'Always'")
+                    Text("2. Ve a Ubicación")
                         .font(.caption2)
-                        .foregroundColor(.orange)
+                        .foregroundColor(.secondary)
                     
-                    // Botón para abrir Ajustes del sistema
-                    if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
-                        Link("⚙️ Abrir Ajustes", destination: settingsURL)
-                            .font(.caption2)
-                            .foregroundColor(.blue)
-                            .padding(.top, 4)
-                    }
+                    Text("3. Selecciona 'Always' (en vez de 'When I Share')")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                    
+                    Text("4. Regresa a la app (el estado se actualiza solo)")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
                 }
             }
             .padding(.vertical, 4)

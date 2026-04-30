@@ -22,7 +22,14 @@ final class PermissionManager: NSObject, ObservableObject, CLLocationManagerDele
         super.init()
         // Configurar el location manager con este objeto como delegate
         self.locationManager.delegate = self
-        print("✅ PermissionManager inicializado con CLLocationManager")
+        
+        // Configurar para máxima eficiencia de batería
+        self.locationManager.desiredAccuracy = kCLLocationAccuracyThreeKilometers
+        self.locationManager.distanceFilter = 1000  // 1km de cambio
+        self.locationManager.pausesLocationUpdatesAutomatically = false
+        self.locationManager.allowsBackgroundLocationUpdates = true
+        
+        print("✅ PermissionManager inicializado con CLLocationManager (Battey efficient)")
     }
     
     // MARK: - Métodos Públicos
@@ -40,24 +47,11 @@ final class PermissionManager: NSObject, ObservableObject, CLLocationManagerDele
         // Marcar como solicitados INMEDIATAMENTE para evitar duplicados
         markPermissionsRequested()
         
-        // Solicitar ubicación PRIMEIRO con delay para evitar race condition
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
+        // Solicitar SOLO ubicación (sin notificaciones ni contactos por ahora)
+        // Esto evita conflictos entre múltiples popups
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
             print("📍 [requestAllPermissions] Solicitando ubicación...")
             self?.requestLocationPermission()
-        }
-        
-        // Solicitar notificaciones con delay mayor
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
-            Task {
-                await self?.requestNotificationPermission()
-            }
-        }
-        
-        // Solicitar contactos con delay mayor
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
-            Task {
-                await self?.requestContactsPermission()
-            }
         }
     }
     
@@ -129,53 +123,27 @@ final class PermissionManager: NSObject, ObservableObject, CLLocationManagerDele
     
     // MARK: - Solicitud de Ubicación
     
-    /// Solicita permisos de ubicación mediante proceso stepwise:
-    /// 1. Primero pide "When in Use" (esto muestra el primer dialog)
-    /// 2. Luego, si es aceptado, pide el upgrade a "Always"
+    /// Solicita permisos de ubicación mediante proceso simple y directo
     private func requestLocationPermission() {
         let status = locationManager.authorizationStatus
         print("📍 Estado actual de ubicación: \(status.rawValue)")
         
-        // Resetear el flag de upgrade si el usuario vuelve a intentar desde Ajustes
-        if status == .authorizedWhenInUse {
-            userDefaults.set(false, forKey: locationUpgradeKey)
-            print("📍 Reseteando flag de upgrade para permitir nuevo intento")
-        }
-        
-        // Asegurar que se ejecuta en main thread
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            // Obtener el UIViewController visible de la window scene
-            let topViewController = self.getTopViewController()
+            print("📍 Intentando solicitar ubicación...")
             
             // Solo solicitar si aún no se ha decidido
             if status == .notDetermined {
-                print("📍 Solicitando permiso de ubicación (paso 1: When in Use)...")
-                print("📍 Top ViewController: \(topViewController != nil ? "✅ Encontrado" : "❌ No encontrado")")
-                print("📍 CLLocationManager delegate: \(self.locationManager.delegate != nil ? "✅ Configurado" : "❌ NO configurado")")
-                
-                // Configurar el location manager
-                self.locationManager.desiredAccuracy = kCLLocationAccuracyReduced
-                self.locationManager.distanceFilter = kCLDistanceFilterNone
-                
-                // Primero solicitamos "When in Use"
+                print("📍 Estado .notDetermined - Solicitando When in Use...")
                 self.locationManager.requestWhenInUseAuthorization()
-                print("📍 ✅ Llamada a requestWhenInUseAuthorization() ejecutada")
-                
-                // Iniciar actualización de ubicación para activar el servicio
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    self.locationManager.startUpdatingLocation()
-                    print("📍 ✅ startUpdatingLocation() iniciado")
-                }
-            } else if status == .denied || status == .restricted {
-                print("⚠️ Permiso de ubicación denegado. El monitoreo automático puede ser limitado.")
-            } else if status == .authorizedAlways {
-                print("✅ Ubicación permitida (Always) - Background monitoring activo")
             } else if status == .authorizedWhenInUse {
-                print("⏳ Ubicación permitida (When in Use) - Solicitando upgrade a Always...")
-                // Si ya tiene "When in Use", solicitar upgrade a "Always"
-                self.requestLocationUpgrade()
+                print("📍 Estado .authorizedWhenInUse - Solicitando Always...")
+                self.locationManager.requestAlwaysAuthorization()
+            } else if status == .authorizedAlways {
+                print("✅ Estado .authorizedAlways - Listo!")
+            } else if status == .denied || status == .restricted {
+                print("⚠️ Estado .denied/.restricted - El usuario debe habilitar en Settings")
             }
         }
     }
@@ -200,23 +168,11 @@ final class PermissionManager: NSObject, ObservableObject, CLLocationManagerDele
     
     /// Solicita el upgrade del permiso de ubicación de "When in Use" a "Always"
     private func requestLocationUpgrade() {
-        print("📍 Llamando a requestAlwaysAuthorization()...")
+        print("📍 Solicitando upgrade a Always...")
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
-            
-            // Configurar el location manager para empezar a detectar ubicación
-            self.locationManager.desiredAccuracy = kCLLocationAccuracyReduced
-            self.locationManager.distanceFilter = kCLDistanceFilterNone
-            self.locationManager.requestWhenInUseAuthorization()
-
             self.locationManager.requestAlwaysAuthorization()
-            print("📍 ✅ Llamada a requestAlwaysAuthorization() ejecutada")
-            
-            // Iniciar actualización de ubicación para activar el servicio
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                self.locationManager.startUpdatingLocation()
-                print("📍 ✅ startUpdatingLocation() iniciado")
-            }
+            print("📍 ✅ requestAlwaysAuthorization() ejecutado")
         }
     }
     
