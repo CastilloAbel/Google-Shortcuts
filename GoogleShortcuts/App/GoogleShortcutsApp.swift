@@ -81,6 +81,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Registrar Background App Refresh task
         registerBackgroundAppRefresh()
         
+        // Programar primera tarea de refresh
+        scheduleClipboardRefresh()
+        
         return true
     }
     
@@ -95,6 +98,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 self?.handleClipboardRefreshTask(task: task as! BGProcessingTask)
             }
             print("📋 [Background] Registrado task de Clipboard Refresh")
+            
+            // Escuchar cuando se vuelve a foreground para reprogramar
+            NotificationCenter.default.addObserver(
+                forName: UIApplication.didBecomeActiveNotification,
+                object: nil,
+                queue: .main
+            ) { [weak self] _ in
+                print("📱 App en foreground - reprogramando Clipboard Refresh")
+                self?.scheduleClipboardRefresh()
+            }
         }
     }
     
@@ -128,9 +141,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     /// Programa la siguiente ejecución de Background Refresh
     /// iOS ejecuta más frecuentemente si detecta uso frecuente de la app
-    static func scheduleClipboardRefresh() {
+    func scheduleClipboardRefresh() {
         if #available(iOS 13.0, *) {
-            let request = BGProcessingTaskRequest(identifier: clipboardRefreshTaskID)
+            // Cancelar tareas previas para evitar duplicados
+            BGTaskScheduler.shared.cancelAllTaskRequests()
+            
+            let request = BGProcessingTaskRequest(identifier: Self.clipboardRefreshTaskID)
             
             // Configurar requisitos mínimos
             request.requiresNetworkConnectivity = false  // No necesita red
@@ -138,7 +154,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             
             do {
                 try BGTaskScheduler.shared.submit(request)
-                print("📋 [Background] Siguiente refresh programado (15-45 min)")
+                print("📋 [Background] Refresh programado (iOS ejecutará cada 15-45 min)")
             } catch {
                 print("❌ [Background] Error al programar refresh: \(error)")
             }
@@ -146,7 +162,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     private func scheduleNextClipboardRefresh() {
-        Self.scheduleClipboardRefresh()
+        scheduleClipboardRefresh()
     }
 }
 

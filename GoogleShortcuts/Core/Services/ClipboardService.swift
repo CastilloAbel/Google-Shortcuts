@@ -104,8 +104,9 @@ final class ClipboardService: NSObject, ObservableObject {
     
     @objc private func appDidEnterForeground() {
         print("📱 App en foreground - verificando portapapeles")
-        // Resetear el changeCount para forzar una verificación
-        lastPasteboardChangeCount = UIPasteboard.general.changeCount - 1
+        // Resetear a -1 para forzar que ANY cambio sea detectado
+        // Esto asegura que si el portapapeles cambió mientras estábamos en background, se detecte
+        lastPasteboardChangeCount = -1
         // Iniciar/reiniciar monitoreo
         stopMonitoring()
         startMonitoring()
