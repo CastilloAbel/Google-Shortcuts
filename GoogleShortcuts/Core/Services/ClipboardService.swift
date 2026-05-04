@@ -104,15 +104,14 @@ final class ClipboardService: NSObject, ObservableObject {
     }
     
     @objc private func appDidEnterForeground() {
-        print("📱 App en foreground - verificando portapapeles")
-        // Resetear a -1 para forzar que ANY cambio sea detectado
-        // Esto asegura que si el portapapeles cambió mientras estábamos en background, se detecte
-        lastPasteboardChangeCount = -1
-        // Iniciar/reiniciar monitoreo
+        print("📱 App en foreground - sincronizando portapapeles")
+        // Detener antes de reiniciar
         stopMonitoring()
+        // Sincronizar el estado ACTUAL del portapapeles
+        // Esto previene falsos positivos de cambios
+        captureClipboardState()
+        // Iniciar monitoreo - que usará el estado recién sincronizado
         startMonitoring()
-        // Verificar inmediatamente
-        checkClipboard()
     }
     
     @objc private func appDidEnterBackground() {
@@ -161,50 +160,55 @@ final class ClipboardService: NSObject, ObservableObject {
     /// Accede directamente al contenido, similar a iOS Shortcuts
     func checkClipboard() {
         let pasteboard = UIPasteboard.general
+        let currentText = pasteboard.string ?? ""
+        let currentURL = pasteboard.url
+        let currentImage = pasteboard.image
         
-        // Estrategia: Verificar cambios en contenido real, no solo changeCount
-        // Esto es más robusto que confiar solo en changeCount que puede fallar después de tiempo
+        var detectado = false
         
-        var hasChanged = false
+        // IMPORTANTE: Deduplicación robusta - chequear contra varios items recientes
+        let recentContent = Set(history.prefix(3).map { $0.content })
         
-        // Verificar texto
-        if let currentText = pasteboard.string, !currentText.isEmpty {
-            if currentText != lastCapturedText && !isDuplicateInHistory(currentText) {
-                lastCapturedText = currentText
+        // Verificar texto: solo agregar si cambió Y no es vacío Y no está en histórico reciente
+        if !currentText.isEmpty {
+            if currentText != lastCapturedText && !recentContent.contains(currentText) {
                 addToHistory(currentText, type: .text)
-                hasChanged = true
+                detectado = true
             }
+            lastCapturedText = currentText
+        } else if !lastCapturedText.isEmpty {
+            // Se limpió el texto
+            lastCapturedText = ""
         }
         
-        // Verificar URL
-        if let currentURL = pasteboard.url {
-            if currentURL != lastCapturedURL && !isDuplicateInHistory(currentURL.absoluteString) {
-                lastCapturedURL = currentURL
-                addToHistory(currentURL.absoluteString, type: .url)
-                hasChanged = true
+        // Verificar URL: solo agregar si cambió Y no está en histórico reciente
+        if let currentURL = currentURL {
+            let urlString = currentURL.absoluteString
+            if currentURL != lastCapturedURL && !recentContent.contains(urlString) {
+                addToHistory(urlString, type: .url)
+                detectado = true
             }
+            lastCapturedURL = currentURL
+        } else if lastCapturedURL != nil {
+            // Se limpió la URL
+            lastCapturedURL = nil
         }
         
-        // Verificar imagen
-        if let image = pasteboard.image {
-            if let imageData = image.jpegData(compressionQuality: 0.8) {
+        // Verificar imagen (menos frecuente)
+        if let currentImage = currentImage {
+            if let imageData = currentImage.jpegData(compressionQuality: 0.8) {
                 let base64String = imageData.base64EncodedString()
-                if !isDuplicateInHistory(base64String) {
+                if !recentContent.contains(base64String) {
                     addToHistory(base64String, type: .image)
-                    hasChanged = true
+                    detectado = true
                 }
             }
         }
         
-        // Actualizar changeCount si hubo cambio
-        if hasChanged {
+        // Actualizar changeCount solo si hubo detección
+        if detectado {
             lastPasteboardChangeCount = pasteboard.changeCount
         }
-    }
-    
-    /// Verifica si un contenido ya existe en el histórico
-    private func isDuplicateInHistory(_ content: String) -> Bool {
-        return history.first?.content == content
     }
     
     /// Obtiene una imagen de un item si es de tipo imagen
