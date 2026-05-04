@@ -9,6 +9,5 @@ final class PermissionManager: NSObject, ObservableObject {
     
     nonisolated private override init() {
         super.init()
-        print("✅ PermissionManager inicializado")
     }
 }

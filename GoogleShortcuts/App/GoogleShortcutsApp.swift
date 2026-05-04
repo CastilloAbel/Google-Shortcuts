@@ -76,14 +76,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
-        print("✅ App inicializada")
-        
-        // Registrar Background App Refresh task
         registerBackgroundAppRefresh()
-        
-        // Programar primera tarea de refresh
         scheduleClipboardRefresh()
-        
         return true
     }
     
@@ -97,7 +91,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             ) { [weak self] task in
                 self?.handleClipboardRefreshTask(task: task as! BGProcessingTask)
             }
-            print("📋 [Background] Registrado task de Clipboard Refresh")
             
             // Escuchar cuando se vuelve a foreground para reprogramar
             NotificationCenter.default.addObserver(
@@ -105,32 +98,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 object: nil,
                 queue: .main
             ) { [weak self] _ in
-                print("📱 App en foreground - reprogramando Clipboard Refresh")
                 self?.scheduleClipboardRefresh()
             }
         }
     }
     
     private func handleClipboardRefreshTask(task: BGProcessingTask) {
-        print("📋 [Background] Ejecutando Clipboard Refresh task...")
-        
         // Agendar la siguiente tarea inmediatamente
         scheduleNextClipboardRefresh()
         
-        // Obtener el servicio de clipboard
-        let clipboardService = ClipboardService.shared
-        
         // Ejecutar chequeo en main thread
         Task { @MainActor in
-            // Revisar portapapeles
-            clipboardService.checkClipboard()
-            print("📋 [Background] Chequeo completado")
-            
-            // Marcar task como completada con éxito
+            ClipboardService.shared.checkClipboard()
             task.setTaskCompleted(success: true)
         }
         
-        // Timeout: marcar como completada después de 30s (límite de iOS)
+        // Timeout: marcar como completada después de 30s
         let deadline = DispatchTime.now() + .seconds(30)
         DispatchQueue.global().asyncAfter(deadline: deadline) {
             if !Task.isCancelled {
@@ -149,14 +132,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             let request = BGProcessingTaskRequest(identifier: Self.clipboardRefreshTaskID)
             
             // Configurar requisitos mínimos
-            request.requiresNetworkConnectivity = false  // No necesita red
-            request.requiresExternalPower = false        // Puede ejecutar con batería
+            request.requiresNetworkConnectivity = false
+            request.requiresExternalPower = false
             
             do {
                 try BGTaskScheduler.shared.submit(request)
-                print("📋 [Background] Refresh programado (iOS ejecutará cada 15-45 min)")
             } catch {
-                print("❌ [Background] Error al programar refresh: \(error)")
+                // Error silencioso para production
             }
         }
     }

@@ -49,11 +49,6 @@ struct ContentView: View {
                 Task { @MainActor in
                     ClipboardService.shared.initializeService()
                 }
-                
-                // Asegurar que el Background Refresh está programado
-                if #available(iOS 13.0, *) {
-                    print("📋 [Frontend] Verificando que Background Refresh está programado...")
-                }
             }
         }
     }

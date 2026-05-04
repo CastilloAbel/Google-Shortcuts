@@ -130,6 +130,41 @@ struct SettingsView: View {
                         .font(.caption2)
                         .foregroundColor(.secondary)
                 }
+                
+                // MARK: - Habilitar permisos de Background App Refresh
+                VStack(spacing: 8) {
+                    if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
+                        Link(destination: settingsURL) {
+                            HStack {
+                                Image(systemName: "gear")
+                                Text("⚙️ Habilitar Background App Refresh")
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 10)
+                            .foregroundColor(.white)
+                            .background(Color.blue)
+                            .cornerRadius(8)
+                        }
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("📌 Pasos:")
+                            .font(.caption2)
+                            .fontWeight(.semibold)
+                        Text("1. Toca el botón arriba")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                        Text("2. Ve a General > Background App Refresh")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                        Text("3. Busca 'Google Shortcuts' y habilita")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(8)
+                    .background(Color.blue.opacity(0.1))
+                    .cornerRadius(6)
+                }
             }
             .padding(.vertical, 4)
         }
