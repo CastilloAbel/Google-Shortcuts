@@ -88,89 +88,81 @@ struct SettingsView: View {
     private var clipboardSection: some View {
         Section("Portapapeles automático") {
             VStack(alignment: .leading, spacing: 12) {
-                // MARK: - Información general
-                HStack {
-                    Image(systemName: "doc.on.clipboard")
-                        .font(.title3)
-                        .foregroundColor(.blue)
-                    
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Background App Refresh")
-                            .font(.caption)
-                            .fontWeight(.bold)
+                // MARK: - Status Card
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Image(systemName: "arrow.2.circlepath")
+                            .font(.system(size: 28))
+                            .foregroundColor(.blue)
                         
-                        Text("Se ejecuta cada 15-45 minutos")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                    }
-                    
-                    Spacer()
-                }
-                .padding(8)
-                .background(Color(.systemGray6))
-                .cornerRadius(6)
-                
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("📋 ¿Cómo funciona?")
-                        .font(.caption)
-                        .fontWeight(.semibold)
-                    
-                    Text("✅ Mientras la app está abierta: monitoreo cada 5 segundos")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                    
-                    Text("⏱️ Cuando está en background: se ejecuta cada 15-45 minutos")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                    
-                    Text("💾 Todos los items se guardan automáticamente")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                    
-                    Text("📲 Las nuevas URLs/imágenes aparecen en Portapapeles")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                }
-                
-                // MARK: - Habilitar Background App Refresh
-                VStack(spacing: 8) {
-                    if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
-                        Link(destination: settingsURL) {
-                            HStack {
-                                Image(systemName: "gear")
-                                Text("⚙️ Ir a Ajustes")
-                                Spacer()
-                                Image(systemName: "arrow.up.right")
-                                    .font(.caption)
-                            }
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 10)
-                            .foregroundColor(.white)
-                            .background(Color.blue)
-                            .cornerRadius(8)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Monitoreo continuo")
+                                .font(.headline)
+                            Text("Cada 5 seg abierta • 15-45 min en background")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
                         }
+                        
+                        Spacer()
                     }
-                    
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("📋 Habilitar en Ajustes:")
-                            .font(.caption2)
-                            .fontWeight(.semibold)
-                        Text("1. Toca el botón arriba")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                        Text("2. Background App Refresh")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                        Text("3. Activa 'Google Shortcuts'")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                    }
-                    .padding(8)
+                    .padding(12)
                     .background(Color.blue.opacity(0.1))
-                    .cornerRadius(6)
+                    .cornerRadius(10)
+                }
+                
+                // MARK: - Quick Features
+                VStack(spacing: 6) {
+                    FeatureRow(icon: "checkmark.circle.fill", text: "Guarda textos, URLs e imágenes", color: .green)
+                    FeatureRow(icon: "clock.fill", text: "Histórico ilimitado", color: .orange)
+                    FeatureRow(icon: "gear.fill", text: "Se sincroniza automáticamente", color: .blue)
+                }
+                
+                // MARK: - Settings Link
+                if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
+                    Link(destination: settingsURL) {
+                        HStack(spacing: 10) {
+                            Image(systemName: "gear.circle.fill")
+                                .font(.title3)
+                            
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Habilitar en iOS")
+                                    .font(.subheadline)
+                                    .fontWeight(.semibold)
+                                Text("Settings > General > Background App Refresh")
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                            }
+                            
+                            Spacer()
+                            Image(systemName: "arrow.up.right")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
+                        .padding(12)
+                        .frame(maxWidth: .infinity)
+                        .background(Color(.systemGray6))
+                        .cornerRadius(10)
+                    }
+                    .foregroundColor(.primary)
                 }
             }
             .padding(.vertical, 4)
+        }
+    }
+    
+    // MARK: - Helper
+    private func FeatureRow(icon: String, text: String, color: Color) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: icon)
+                .font(.system(size: 14))
+                .foregroundColor(color)
+                .frame(width: 20)
+            
+            Text(text)
+                .font(.caption)
+                .foregroundColor(.primary)
+            
+            Spacer()
         }
     }
     
