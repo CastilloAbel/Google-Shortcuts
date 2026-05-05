@@ -26,6 +26,8 @@ struct IsBatteryLowIntent: AppIntent {
     }
 }
 
+// TEMPORARILY DISABLED: GetBatteryStateIntent causes ExtractAppIntentsMetadata error
+/*
 struct GetBatteryStateIntent: AppIntent {
     static var title: LocalizedStringResource = "Estado de batería"
     static var description: IntentDescription = "Devuelve si está cargando, cargada, o descargando"
@@ -36,6 +38,7 @@ struct GetBatteryStateIntent: AppIntent {
         return .result(value: state)
     }
 }
+*/
 
 struct IsLowPowerModeOnIntent: AppIntent {
     static var title: LocalizedStringResource = "¿Modo bajo consumo?"
@@ -93,8 +96,9 @@ struct IsCellularDataOnIntent: AppIntent {
 }
 */
 
-// MARK: - Device Info Intents
+// MARK: - Device Info Intents (TEMPORARILY DISABLED - Testing which causes ExtractAppIntentsMetadata error)
 
+/*
 struct GetDeviceModelIntent: AppIntent {
     static var title: LocalizedStringResource = "Modelo de dispositivo"
     static var description: IntentDescription = "Devuelve el modelo del iPhone (ej: iPhone 15 Pro)"
@@ -148,6 +152,7 @@ struct GetTotalStorageIntent: AppIntent {
         return .result(value: totalGB)
     }
 }
+*/
 
 // MARK: - Network Intents (TEMPORARILY DISABLED - Testing which causes ExtractAppIntentsMetadata error)
 
@@ -173,8 +178,9 @@ struct GetConnectionTypeIntent: AppIntent {
 }
 */
 
-// MARK: - Device State Intents
+// MARK: - Device State Intents (TEMPORARILY DISABLED - Testing which causes ExtractAppIntentsMetadata error)
 
+/*
 struct GetScreenBrightnessIntent: AppIntent {
     static var title: LocalizedStringResource = "Brillo de pantalla"
     static var description: IntentDescription = "Devuelve el nivel de brillo actual (0-100%)"
@@ -205,3 +211,4 @@ struct HasNotchOrIslandIntent: AppIntent {
         return .result(value: state.hasNotchOrDynamicIsland)
     }
 }
+*/
