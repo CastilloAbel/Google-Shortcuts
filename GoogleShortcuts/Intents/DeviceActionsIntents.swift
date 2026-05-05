@@ -27,7 +27,7 @@ struct IsBatteryLowIntent: AppIntent {
 }
 
 // TEMPORARILY DISABLED: GetBatteryStateIntent causes ExtractAppIntentsMetadata error
-/*
+
 struct GetBatteryStateIntent: AppIntent {
     static var title: LocalizedStringResource = "Estado de batería"
     static var description: IntentDescription = "Devuelve si está cargando, cargada, o descargando"
@@ -38,7 +38,7 @@ struct GetBatteryStateIntent: AppIntent {
         return .result(value: state)
     }
 }
-*/
+
 
 struct IsLowPowerModeOnIntent: AppIntent {
     static var title: LocalizedStringResource = "¿Modo bajo consumo?"
