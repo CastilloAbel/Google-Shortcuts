@@ -256,14 +256,10 @@ final class ClipboardService: NSObject, ObservableObject {
     func refreshClipboardOnAppLaunch() {
         let pasteboard = UIPasteboard.general
         
-        // Evitar agregar si el portapapeles no tiene nada
-        guard let url = pasteboard.url ?? (pasteboard.string.map { $0 }) ?? pasteboard.image else {
-            return
-        }
-        
-        // Solo capturar si no está ya en los primeros 3 items
+        // Solo capturar si hay contenido nuevo (no duplicado)
         let recentContent = Set(history.prefix(3).map { $0.content })
         
+        // Intentar capturar en orden: texto, URL, imagen
         if let text = pasteboard.string, !text.isEmpty, !recentContent.contains(text) {
             addToHistory(text, type: .text)
         } else if let url = pasteboard.url, !recentContent.contains(url.absoluteString) {
