@@ -116,7 +116,7 @@ struct GetDeviceNameIntent: AppIntent {
         return .result(value: info.deviceName)
     }
 }
-/*
+
 struct GetiOSVersionIntent: AppIntent {
     static var title: LocalizedStringResource = "Versión de iOS"
     static var description: IntentDescription = "Devuelve la versión actual de iOS"
@@ -128,7 +128,7 @@ struct GetiOSVersionIntent: AppIntent {
 }
 
 // MARK: - Storage Intents
-
+/*
 struct GetAvailableStorageIntent: AppIntent {
     static var title: LocalizedStringResource = "Espacio disponible"
     static var description: IntentDescription = "Devuelve el espacio libre en el dispositivo (en GB)"
