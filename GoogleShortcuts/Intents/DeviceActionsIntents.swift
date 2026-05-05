@@ -96,7 +96,7 @@ struct IsCellularDataOnIntent: AppIntent {
 
 // MARK: - Device Info Intents (TEMPORARILY DISABLED - Testing which causes ExtractAppIntentsMetadata error)
 
-/*
+
 struct GetDeviceModelIntent: AppIntent {
     static var title: LocalizedStringResource = "Modelo de dispositivo"
     static var description: IntentDescription = "Devuelve el modelo del iPhone (ej: iPhone 15 Pro)"
@@ -106,7 +106,7 @@ struct GetDeviceModelIntent: AppIntent {
         return .result(value: info.deviceModel)
     }
 }
-
+/*
 struct GetDeviceNameIntent: AppIntent {
     static var title: LocalizedStringResource = "Nombre del dispositivo"
     static var description: IntentDescription = "Devuelve el nombre que le diste a tu iPhone"
