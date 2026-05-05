@@ -135,6 +135,16 @@ struct GoogleShortcutsShortcutsProvider: AppShortcutsProvider {
             systemImageName: "bolt.badge"
         )
         
+        AppShortcut(
+            intent: GetBatteryStateIntent(),
+            phrases: [
+                "Estado de batería",
+                "¿Cargando o descargando?"
+            ],
+            shortTitle: "Estado de Batería",
+            systemImageName: "bolt.fill"
+        )
+        
         // MARK: - Device Actions: Connectivity
         
         AppShortcut(
@@ -159,52 +169,14 @@ struct GoogleShortcutsShortcutsProvider: AppShortcutsProvider {
             systemImageName: "wifi"
         )
         
-        // MARK: - Device Info (DISABLED - testing)
-        /*
         AppShortcut(
-            intent: GetDeviceModelIntent(),
+            intent: IsVPNConnectedIntent(),
             phrases: [
-                "¿Qué iPhone tengo?",
-                "Modelo del dispositivo"
+                "¿VPN conectado?",
+                "¿VPN activo?"
             ],
-            shortTitle: "Modelo del Dispositivo",
-            systemImageName: "iphone"
-        )
-        
-        AppShortcut(
-            intent: GetiOSVersionIntent(),
-            phrases: [
-                "Versión de iOS",
-                "¿Qué versión de iOS?"
-            ],
-            shortTitle: "Versión de iOS",
-            systemImageName: "info.circle"
-        )
-        */
-        
-        // MARK: - Rest DISABLED for testing
-        /*
-        
-        AppShortcut(
-            intent: IsBluetoothOnIntent(),
-            phrases: [
-                "¿Bluetooth?",
-                "¿Bluetooth activo?",
-                "Bluetooth encendido"
-            ],
-            shortTitle: "Bluetooth",
-            systemImageName: "bluetooth"
-        )
-        
-        AppShortcut(
-            intent: IsWiFiOnIntent(),
-            phrases: [
-                "¿WiFi?",
-                "¿WiFi conexión?",
-                "¿Conectado a WiFi?"
-            ],
-            shortTitle: "WiFi",
-            systemImageName: "wifi"
+            shortTitle: "VPN",
+            systemImageName: "network.badge.shield.half.filled"
         )
         
         AppShortcut(
@@ -325,28 +297,6 @@ struct GoogleShortcutsShortcutsProvider: AppShortcutsProvider {
         
         // MARK: - Device Actions: Device Info
         // TEMPORARILY DISABLED: Testing which Device Action causes ExtractAppIntentsMetadata error
-        /*
-        AppShortcut(
-            intent: GetDeviceModelIntent(),
-            phrases: [
-                "¿Qué iPhone tengo?",
-                "Modelo del dispositivo"
-            ],
-            shortTitle: "Modelo del Dispositivo",
-            systemImageName: "iphone"
-        )
-        
-        AppShortcut(
-            intent: GetiOSVersionIntent(),
-            phrases: [
-                "Versión de iOS",
-                "¿Qué versión de iOS?"
-            ],
-            shortTitle: "Versión de iOS",
-            systemImageName: "info.circle"
-        )
-        
-        // MARK: - Device Actions: Network & Storage
         
         AppShortcut(
             intent: IsOnlineIntent(),
@@ -360,6 +310,16 @@ struct GoogleShortcutsShortcutsProvider: AppShortcutsProvider {
         )
         
         AppShortcut(
+            intent: GetConnectionTypeIntent(),
+            phrases: [
+                "Tipo de conexión",
+                "¿WiFi o datos?"
+            ],
+            shortTitle: "Tipo de Conexión",
+            systemImageName: "network"
+        )
+        
+        AppShortcut(
             intent: GetAvailableStorageIntent(),
             phrases: [
                 "Espacio disponible",
@@ -368,6 +328,45 @@ struct GoogleShortcutsShortcutsProvider: AppShortcutsProvider {
             shortTitle: "Espacio Libre",
             systemImageName: "internaldrive"
         )
-        */
+        
+        AppShortcut(
+            intent: GetTotalStorageIntent(),
+            phrases: [
+                "Almacenamiento total",
+                "¿Cuánto almacenamiento tengo?"
+            ],
+            shortTitle: "Almacenamiento Total",
+            systemImageName: "internaldrive.fill"
+        )
+        
+        AppShortcut(
+            intent: GetScreenBrightnessIntent(),
+            phrases: [
+                "Brillo de pantalla",
+                "¿Cuál es el brillo?"
+            ],
+            shortTitle: "Brillo de Pantalla",
+            systemImageName: "sun.max"
+        )
+        
+        AppShortcut(
+            intent: IsDarkModeOnIntent(),
+            phrases: [
+                "¿Modo oscuro?",
+                "¿Dark mode?"
+            ],
+            shortTitle: "Modo Oscuro",
+            systemImageName: "moon.fill"
+        )
+        
+        AppShortcut(
+            intent: HasNotchOrIslandIntent(),
+            phrases: [
+                "¿Tiene notch?",
+                "¿Tiene isla dinámica?"
+            ],
+            shortTitle: "Notch o Isla",
+            systemImageName: "rectangle.inset.topright"
+        )
     }
 }
