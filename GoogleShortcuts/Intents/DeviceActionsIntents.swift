@@ -189,7 +189,7 @@ struct GetScreenBrightnessIntent: AppIntent {
         return .result(value: brightness)
     }
 }
-/*
+
 struct IsDarkModeOnIntent: AppIntent {
     static var title: LocalizedStringResource = "¿Modo oscuro?"
     static var description: IntentDescription = "Verifica si el modo oscuro está activado"
@@ -209,4 +209,4 @@ struct HasNotchOrIslandIntent: AppIntent {
         return .result(value: state.hasNotchOrDynamicIsland)
     }
 }
-*/
+
