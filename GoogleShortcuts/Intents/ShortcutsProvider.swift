@@ -293,7 +293,6 @@ struct GoogleShortcutsShortcutsProvider: AppShortcutsProvider {
             shortTitle: "Notch o Isla",
             systemImageName: "rectangle.inset.topright"
         )
-        */
         
         // MARK: - Device Actions: Device Info
         // TEMPORARILY DISABLED: Testing which Device Action causes ExtractAppIntentsMetadata error
