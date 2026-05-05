@@ -87,7 +87,8 @@ struct SettingsView: View {
     
     private var clipboardSection: some View {
         Section("Portapapeles automático") {
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 12) {
+                // MARK: - Información general
                 HStack {
                     Image(systemName: "doc.on.clipboard")
                         .font(.title3)
@@ -114,11 +115,11 @@ struct SettingsView: View {
                         .font(.caption)
                         .fontWeight(.semibold)
                     
-                    Text("✅ Mientras la app está abierta: monitoreo en tiempo real")
+                    Text("✅ Mientras la app está abierta: monitoreo cada 5 segundos")
                         .font(.caption2)
                         .foregroundColor(.secondary)
                     
-                    Text("⏱️ Cuando está en background: cada 15-45 minutos (según uso)")
+                    Text("⏱️ Cuando está en background: se ejecuta cada 15-45 minutos")
                         .font(.caption2)
                         .foregroundColor(.secondary)
                     
@@ -126,18 +127,21 @@ struct SettingsView: View {
                         .font(.caption2)
                         .foregroundColor(.secondary)
                     
-                    Text("🔔 Las nuevas URLs/imágenes aparecen en la pestaña Portapapeles")
+                    Text("📲 Las nuevas URLs/imágenes aparecen en Portapapeles")
                         .font(.caption2)
                         .foregroundColor(.secondary)
                 }
                 
-                // MARK: - Habilitar permisos de Background App Refresh
+                // MARK: - Habilitar Background App Refresh
                 VStack(spacing: 8) {
                     if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
                         Link(destination: settingsURL) {
                             HStack {
                                 Image(systemName: "gear")
-                                Text("⚙️ Habilitar Background App Refresh")
+                                Text("⚙️ Ir a Ajustes")
+                                Spacer()
+                                Image(systemName: "arrow.up.right")
+                                    .font(.caption)
                             }
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 10)
@@ -148,16 +152,16 @@ struct SettingsView: View {
                     }
                     
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("📌 Pasos:")
+                        Text("📋 Habilitar en Ajustes:")
                             .font(.caption2)
                             .fontWeight(.semibold)
                         Text("1. Toca el botón arriba")
                             .font(.caption2)
                             .foregroundColor(.secondary)
-                        Text("2. Ve a General > Background App Refresh")
+                        Text("2. Background App Refresh")
                             .font(.caption2)
                             .foregroundColor(.secondary)
-                        Text("3. Busca 'Google Shortcuts' y habilita")
+                        Text("3. Activa 'Google Shortcuts'")
                             .font(.caption2)
                             .foregroundColor(.secondary)
                     }

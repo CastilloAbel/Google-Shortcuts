@@ -130,8 +130,9 @@ final class ClipboardService: NSObject, ObservableObject {
         // Capturar estado inicial del portapapeles
         captureClipboardState()
         
-        // Crear timer que monitorea cada 0.5 segundos
-        let timer = Timer(timeInterval: 0.5, repeats: true) { [weak self] _ in
+        // Crear timer que monitorea cada 5 segundos (no 0.5)
+        // Acceder frecuentemente al pasteboard causa notificaciones del sistema constantemente
+        let timer = Timer(timeInterval: 5.0, repeats: true) { [weak self] _ in
             Task { @MainActor in
                 self?.checkClipboard()
             }
@@ -157,44 +158,50 @@ final class ClipboardService: NSObject, ObservableObject {
     }
     
     /// Verifica si hay cambios en el portapapeles
-    /// Accede directamente al contenido, similar a iOS Shortcuts
+    /// Estrategia: Chequear changeCount PRIMERO, solo leer contenido si cambió
     func checkClipboard() {
         let pasteboard = UIPasteboard.general
+        let currentChangeCount = pasteboard.changeCount
+        
+        // OPTIMIZACIÓN: Si el changeCount no cambió, no hay nada nuevo
+        if currentChangeCount == lastPasteboardChangeCount {
+            return
+        }
+        
+        // Solo si el changeCount cambió, leer el contenido
         let currentText = pasteboard.string ?? ""
         let currentURL = pasteboard.url
         let currentImage = pasteboard.image
         
         var detectado = false
         
-        // IMPORTANTE: Deduplicación robusta - chequear contra varios items recientes
+        // Deduplicación: chequear contra los últimos 3 items
         let recentContent = Set(history.prefix(3).map { $0.content })
         
-        // Verificar texto: solo agregar si cambió Y no es vacío Y no está en histórico reciente
-        if !currentText.isEmpty {
-            if currentText != lastCapturedText && !recentContent.contains(currentText) {
+        // Verificar texto: solo agregar si es diferente del último capturado Y no en histórico
+        if !currentText.isEmpty && currentText != lastCapturedText {
+            if !recentContent.contains(currentText) {
                 addToHistory(currentText, type: .text)
                 detectado = true
             }
             lastCapturedText = currentText
-        } else if !lastCapturedText.isEmpty {
-            // Se limpió el texto
+        } else if !lastCapturedText.isEmpty && currentText.isEmpty {
             lastCapturedText = ""
         }
         
-        // Verificar URL: solo agregar si cambió Y no está en histórico reciente
-        if let currentURL = currentURL {
+        // Verificar URL: solo agregar si es diferente Y no en histórico
+        if let currentURL = currentURL, currentURL != lastCapturedURL {
             let urlString = currentURL.absoluteString
-            if currentURL != lastCapturedURL && !recentContent.contains(urlString) {
+            if !recentContent.contains(urlString) {
                 addToHistory(urlString, type: .url)
                 detectado = true
             }
             lastCapturedURL = currentURL
-        } else if lastCapturedURL != nil {
-            // Se limpió la URL
+        } else if currentURL == nil && lastCapturedURL != nil {
             lastCapturedURL = nil
         }
         
-        // Verificar imagen (menos frecuente)
+        // Verificar imagen
         if let currentImage = currentImage {
             if let imageData = currentImage.jpegData(compressionQuality: 0.8) {
                 let base64String = imageData.base64EncodedString()
@@ -205,9 +212,9 @@ final class ClipboardService: NSObject, ObservableObject {
             }
         }
         
-        // Actualizar changeCount solo si hubo detección
+        // Solo actualizar lastPasteboardChangeCount si hubo cambio real
         if detectado {
-            lastPasteboardChangeCount = pasteboard.changeCount
+            lastPasteboardChangeCount = currentChangeCount
         }
     }
     

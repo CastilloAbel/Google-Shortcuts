@@ -1,5 +1,6 @@
 import SwiftUI
 import BackgroundTasks
+import UserNotifications
 
 /// Entry point de la aplicación.
 /// Configurado para iOS 16+ con App Intents (no requiere cuenta paga).
@@ -76,9 +77,28 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
+        // Solicitar permiso de notificaciones locales
+        requestNotificationPermission()
+        
+        // Configurar Background App Refresh
         registerBackgroundAppRefresh()
         scheduleClipboardRefresh()
         return true
+    }
+    
+    // MARK: - Local Notifications Permission
+    
+    private func requestNotificationPermission() {
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+            if granted {
+                DispatchQueue.main.async {
+                    UIApplication.shared.registerForRemoteNotifications()
+                }
+            }
+            if let error = error {
+                print("⚠️ Error solicitando permisos de notificación: \(error.localizedDescription)")
+            }
+        }
     }
     
     // MARK: - Background App Refresh
