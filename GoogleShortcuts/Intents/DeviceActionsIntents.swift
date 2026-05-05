@@ -154,7 +154,7 @@ struct GetTotalStorageIntent: AppIntent {
 
 // MARK: - Network Intents (TEMPORARILY DISABLED - Testing which causes ExtractAppIntentsMetadata error)
 
-/*
+
 struct IsOnlineIntent: AppIntent {
     static var title: LocalizedStringResource = "¿Conectado a internet?"
     static var description: IntentDescription = "Verifica si hay conexión a internet"
@@ -164,7 +164,7 @@ struct IsOnlineIntent: AppIntent {
         return .result(value: isOnline)
     }
 }
-
+/*
 struct GetConnectionTypeIntent: AppIntent {
     static var title: LocalizedStringResource = "Tipo de conexión"
     static var description: IntentDescription = "Devuelve si está en WiFi, datos móviles, o desconectado"
