@@ -106,7 +106,7 @@ struct GetDeviceModelIntent: AppIntent {
         return .result(value: info.deviceModel)
     }
 }
-/*
+
 struct GetDeviceNameIntent: AppIntent {
     static var title: LocalizedStringResource = "Nombre del dispositivo"
     static var description: IntentDescription = "Devuelve el nombre que le diste a tu iPhone"
@@ -116,7 +116,7 @@ struct GetDeviceNameIntent: AppIntent {
         return .result(value: info.deviceName)
     }
 }
-
+/*
 struct GetiOSVersionIntent: AppIntent {
     static var title: LocalizedStringResource = "Versión de iOS"
     static var description: IntentDescription = "Devuelve la versión actual de iOS"
