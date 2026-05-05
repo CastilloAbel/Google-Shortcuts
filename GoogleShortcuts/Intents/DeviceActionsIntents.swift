@@ -164,7 +164,7 @@ struct IsOnlineIntent: AppIntent {
         return .result(value: isOnline)
     }
 }
-/*
+
 struct GetConnectionTypeIntent: AppIntent {
     static var title: LocalizedStringResource = "Tipo de conexión"
     static var description: IntentDescription = "Devuelve si está en WiFi, datos móviles, o desconectado"
@@ -174,7 +174,7 @@ struct GetConnectionTypeIntent: AppIntent {
         return .result(value: network.connectionType.rawValue)
     }
 }
-*/
+
 
 // MARK: - Device State Intents (TEMPORARILY DISABLED - Testing which causes ExtractAppIntentsMetadata error)
 
