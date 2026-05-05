@@ -135,6 +135,7 @@ struct GoogleShortcutsShortcutsProvider: AppShortcutsProvider {
             systemImageName: "bolt.badge"
         )
         
+        /*
         AppShortcut(
             intent: GetBatteryStateIntent(),
             phrases: [
@@ -144,6 +145,7 @@ struct GoogleShortcutsShortcutsProvider: AppShortcutsProvider {
             shortTitle: "Estado de Batería",
             systemImageName: "bolt.fill"
         )
+        */
         
         // MARK: - Device Actions: Connectivity
         
@@ -170,7 +172,7 @@ struct GoogleShortcutsShortcutsProvider: AppShortcutsProvider {
         )
         
         // MARK: - Device Actions: Device Info
-        
+        /*
         AppShortcut(
             intent: GetDeviceModelIntent(),
             phrases: [
@@ -200,9 +202,10 @@ struct GoogleShortcutsShortcutsProvider: AppShortcutsProvider {
             shortTitle: "Versión de iOS",
             systemImageName: "info.circle"
         )
+        */
         
         // MARK: - Device Actions: Storage
-        
+        /*
         AppShortcut(
             intent: GetAvailableStorageIntent(),
             phrases: [
@@ -252,7 +255,9 @@ struct GoogleShortcutsShortcutsProvider: AppShortcutsProvider {
             shortTitle: "Notch o Isla",
             systemImageName: "rectangle.inset.topright"
         )
+        */
         
+        /*
         AppShortcut(
             intent: GetAvailableStorageIntent(),
             phrases: [
@@ -302,5 +307,6 @@ struct GoogleShortcutsShortcutsProvider: AppShortcutsProvider {
             shortTitle: "Notch o Isla",
             systemImageName: "rectangle.inset.topright"
         )
+        */
     }
 }
