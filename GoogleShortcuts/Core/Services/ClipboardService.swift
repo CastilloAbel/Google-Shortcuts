@@ -230,7 +230,7 @@ final class ClipboardService: NSObject, ObservableObject {
     }
     
     /// Captura manualmente el contenido actual del portapapeles
-    /// (para el botón Refresh en la UI)
+    /// (para el botón Refresh en la UI y auto-refresh en app launch)
     func captureCurrentClipboard() {
         let pasteboard = UIPasteboard.general
         
@@ -248,6 +248,35 @@ final class ClipboardService: NSObject, ObservableObject {
         }
         
         // Actualizar estado capturado
+        captureClipboardState()
+    }
+    
+    /// Verifica y captura el clipboard en app startup
+    /// Solo captura si hay contenido nuevo (no duplicado)
+    func refreshClipboardOnAppLaunch() {
+        let pasteboard = UIPasteboard.general
+        
+        // Evitar agregar si el portapapeles no tiene nada
+        guard let url = pasteboard.url ?? (pasteboard.string.map { $0 }) ?? pasteboard.image else {
+            return
+        }
+        
+        // Solo capturar si no está ya en los primeros 3 items
+        let recentContent = Set(history.prefix(3).map { $0.content })
+        
+        if let text = pasteboard.string, !text.isEmpty, !recentContent.contains(text) {
+            addToHistory(text, type: .text)
+        } else if let url = pasteboard.url, !recentContent.contains(url.absoluteString) {
+            addToHistory(url.absoluteString, type: .url)
+        } else if let image = pasteboard.image {
+            if let imageData = image.jpegData(compressionQuality: 0.8) {
+                let base64String = imageData.base64EncodedString()
+                if !recentContent.contains(base64String) {
+                    addToHistory(base64String, type: .image)
+                }
+            }
+        }
+        
         captureClipboardState()
     }
     

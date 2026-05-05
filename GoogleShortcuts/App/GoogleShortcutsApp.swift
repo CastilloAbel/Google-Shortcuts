@@ -1,6 +1,7 @@
 import SwiftUI
 import BackgroundTasks
 import UserNotifications
+import CoreLocation
 
 /// Entry point de la aplicación.
 /// Configurado para iOS 16+ con App Intents (no requiere cuenta paga).
@@ -72,18 +73,36 @@ struct GoogleShortcutsApp: App {
 class AppDelegate: UIResponder, UIApplicationDelegate {
     
     static let clipboardRefreshTaskID = "com.abel.shortcuts.clipboard-refresh"
+    private let locationManager = CLLocationManager()
     
     func application(
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
+        // Solicitar permisos de ubicación (para testear si es necesario para Background App Refresh)
+        requestLocationPermission()
+        
         // Solicitar permiso de notificaciones locales
         requestNotificationPermission()
         
         // Configurar Background App Refresh
         registerBackgroundAppRefresh()
         scheduleClipboardRefresh()
+        
+        // Auto-refresh clipboard en app launch
+        Task { @MainActor in
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                ClipboardService.shared.refreshClipboardOnAppLaunch()
+            }
+        }
+        
         return true
+    }
+    
+    // MARK: - Location Permissions
+    
+    private func requestLocationPermission() {
+        locationManager.requestWhenInUseAuthorization()
     }
     
     // MARK: - Local Notifications Permission

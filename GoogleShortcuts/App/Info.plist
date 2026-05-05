@@ -102,6 +102,10 @@
     <key>UIRequestUserNotificationPermission</key>
     <true/>
     
+    <!-- Permisos de Ubicación: Para testear si es necesario para Background App Refresh -->
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>Tu ubicación nos ayuda a optimizar el monitoreo del portapapeles en background.</string>
+    
     <key>NSAppTransportSecurity</key>
     <dict>
         <key>NSAllowsArbitraryLoads</key>
