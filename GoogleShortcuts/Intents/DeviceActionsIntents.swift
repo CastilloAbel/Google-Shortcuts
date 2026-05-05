@@ -178,7 +178,7 @@ struct GetConnectionTypeIntent: AppIntent {
 
 // MARK: - Device State Intents (TEMPORARILY DISABLED - Testing which causes ExtractAppIntentsMetadata error)
 
-/*
+
 struct GetScreenBrightnessIntent: AppIntent {
     static var title: LocalizedStringResource = "Brillo de pantalla"
     static var description: IntentDescription = "Devuelve el nivel de brillo actual (0-100%)"
@@ -189,7 +189,7 @@ struct GetScreenBrightnessIntent: AppIntent {
         return .result(value: brightness)
     }
 }
-
+/*
 struct IsDarkModeOnIntent: AppIntent {
     static var title: LocalizedStringResource = "¿Modo oscuro?"
     static var description: IntentDescription = "Verifica si el modo oscuro está activado"
