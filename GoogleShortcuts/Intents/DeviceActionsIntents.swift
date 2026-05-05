@@ -17,15 +17,11 @@ struct IsBatteryLowIntent: AppIntent {
     static var title: LocalizedStringResource = "¿Batería baja?"
     static var description: IntentDescription = "Verifica si la batería está baja (por defecto < 20%)"
     
-    @Parameter(title: "Umbral (%)", description: "Porcentaje para considerar batería baja", default: 20)
-    var threshold: Int
-    
-    init() {
-        self.threshold = 20
-    }
+    // Removido @Parameter temporalmente debido a ExtractAppIntentsMetadata error
+    // Los parámetros con defaults pueden causar problemas en AppIntents
     
     func perform() async throws -> some IntentResult & ReturnsValue<Bool> {
-        let isLow = await DeviceCapabilities.isBatteryLow(threshold: threshold)
+        let isLow = await DeviceCapabilities.isBatteryLow(threshold: 20)
         return .result(value: isLow)
     }
 }
@@ -73,6 +69,9 @@ struct IsWiFiOnIntent: AppIntent {
     }
 }
 
+// MARK: - Connectivity Intents (TEMPORARILY DISABLED - Testing which causes ExtractAppIntentsMetadata error)
+
+/*
 struct IsVPNConnectedIntent: AppIntent {
     static var title: LocalizedStringResource = "¿VPN conectado?"
     static var description: IntentDescription = "Verifica si hay una VPN activa"
@@ -92,6 +91,7 @@ struct IsCellularDataOnIntent: AppIntent {
         return .result(value: status.isCellularDataOn)
     }
 }
+*/
 
 // MARK: - Device Info Intents
 
@@ -149,8 +149,9 @@ struct GetTotalStorageIntent: AppIntent {
     }
 }
 
-// MARK: - Network Intents
+// MARK: - Network Intents (TEMPORARILY DISABLED - Testing which causes ExtractAppIntentsMetadata error)
 
+/*
 struct IsOnlineIntent: AppIntent {
     static var title: LocalizedStringResource = "¿Conectado a internet?"
     static var description: IntentDescription = "Verifica si hay conexión a internet"
@@ -170,6 +171,7 @@ struct GetConnectionTypeIntent: AppIntent {
         return .result(value: network.connectionType.rawValue)
     }
 }
+*/
 
 // MARK: - Device State Intents
 

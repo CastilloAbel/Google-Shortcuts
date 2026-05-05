@@ -169,26 +169,6 @@ struct GoogleShortcutsShortcutsProvider: AppShortcutsProvider {
             systemImageName: "wifi"
         )
         
-        AppShortcut(
-            intent: IsVPNConnectedIntent(),
-            phrases: [
-                "¿VPN conectado?",
-                "¿VPN activo?"
-            ],
-            shortTitle: "VPN",
-            systemImageName: "network.badge.shield.half.filled"
-        )
-        
-        AppShortcut(
-            intent: IsCellularDataOnIntent(),
-            phrases: [
-                "¿Datos móviles?",
-                "¿Conexión celular?"
-            ],
-            shortTitle: "Datos Móviles",
-            systemImageName: "antenna.radiowaves.left.and.right"
-        )
-        
         // MARK: - Device Actions: Device Info
         
         AppShortcut(
@@ -221,28 +201,7 @@ struct GoogleShortcutsShortcutsProvider: AppShortcutsProvider {
             systemImageName: "info.circle"
         )
         
-        // MARK: - Device Actions: Network & Storage
-        
-        AppShortcut(
-            intent: IsOnlineIntent(),
-            phrases: [
-                "¿Internet?",
-                "¿Online?",
-                "¿Conectado?"
-            ],
-            shortTitle: "¿Online?",
-            systemImageName: "globe"
-        )
-        
-        AppShortcut(
-            intent: GetConnectionTypeIntent(),
-            phrases: [
-                "Tipo de conexión",
-                "¿WiFi o datos?"
-            ],
-            shortTitle: "Tipo de Conexión",
-            systemImageName: "network"
-        )
+        // MARK: - Device Actions: Storage
         
         AppShortcut(
             intent: GetAvailableStorageIntent(),
@@ -292,30 +251,6 @@ struct GoogleShortcutsShortcutsProvider: AppShortcutsProvider {
             ],
             shortTitle: "Notch o Isla",
             systemImageName: "rectangle.inset.topright"
-        )
-        
-        // MARK: - Device Actions: Device Info
-        // TEMPORARILY DISABLED: Testing which Device Action causes ExtractAppIntentsMetadata error
-        
-        AppShortcut(
-            intent: IsOnlineIntent(),
-            phrases: [
-                "¿Internet?",
-                "¿Online?",
-                "¿Conectado?"
-            ],
-            shortTitle: "¿Online?",
-            systemImageName: "globe"
-        )
-        
-        AppShortcut(
-            intent: GetConnectionTypeIntent(),
-            phrases: [
-                "Tipo de conexión",
-                "¿WiFi o datos?"
-            ],
-            shortTitle: "Tipo de Conexión",
-            systemImageName: "network"
         )
         
         AppShortcut(
