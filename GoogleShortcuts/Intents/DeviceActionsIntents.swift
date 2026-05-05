@@ -128,7 +128,7 @@ struct GetiOSVersionIntent: AppIntent {
 }
 
 // MARK: - Storage Intents
-/*
+
 struct GetAvailableStorageIntent: AppIntent {
     static var title: LocalizedStringResource = "Espacio disponible"
     static var description: IntentDescription = "Devuelve el espacio libre en el dispositivo (en GB)"
@@ -150,7 +150,7 @@ struct GetTotalStorageIntent: AppIntent {
         return .result(value: totalGB)
     }
 }
-*/
+
 
 // MARK: - Network Intents (TEMPORARILY DISABLED - Testing which causes ExtractAppIntentsMetadata error)
 
